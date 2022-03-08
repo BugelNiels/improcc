@@ -352,11 +352,13 @@ IntImage applyLutIntImage(IntImage image, int *LUT, int LUTsize);
 
 /**
  * @brief Performs a distance transform on the provided image.
+ * It calculates for each foreground pixel the distance to the nearest background pixel based on some metric.
  *
  * @param image The image to perform the distance transform on.
  * @param metric The metric to use for the distance transform. Should be one of the constants: MANHATTAN, CHESSBOARD,
  * EUCLID or SQEUCLID.
- * @param foreground The pixel value for which to calculate the distance to the nearest foreground pixel.
+ * @param foreground Pixels with this pixel value are assumed as foreground pixels in the distance transforms. Pixels
+ * that have different values are assumed to be background pixels.
  * @return IntImage An image containing the distances of each pixel to the corresponding provided pixel value.
  */
 IntImage distanceTransform(IntImage image, int metric, int foreground);

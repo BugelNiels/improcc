@@ -50,10 +50,10 @@ static void *safeCalloc(int sz) {
 }
 
 static int **allocIntMatrix(int width, int height) {
-  int **matrix = safeMalloc(height * sizeof(int *) + width * height * sizeof(int));
+  int **matrix = safeMalloc(height*sizeof(int *) + width*height*sizeof(int));
   int *p = (int *)(matrix + height);
   for (int y = 0; y < height; y++) {
-    matrix[y] = p + width * y;
+    matrix[y] = p + width*y;
   }
   return matrix;
 }
@@ -204,7 +204,7 @@ void getMinMax(IntImage image, int *minimalValue, int *maximalValue) {
   *maximalValue = maxVal;
 }
 
-int getIntPixel(IntImage image, int x, int y) {
+inline int getIntPixel(IntImage image, int x, int y) {
 #if FAST
   return image.pixels[y - image.domain.minY][x - image.domain.minX];
 #else
@@ -215,7 +215,7 @@ int getIntPixel(IntImage image, int x, int y) {
 #endif
 }
 
-void setIntPixel(IntImage *image, int x, int y, int greyValue) {
+inline void setIntPixel(IntImage *image, int x, int y, int greyValue) {
 #if FAST
   image->pixels[y - image->domain.minY][x - image->domain.minX] = greyValue;
 #else
@@ -312,7 +312,7 @@ static uint8_t *intImageToByteBuffer(IntImage image) {
   int minX, maxX, minY, maxY, width = getWidth(domain), height = getHeight(domain);
   getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
 
-  uint8_t *buffer = safeMalloc(width * height);
+  uint8_t *buffer = safeMalloc(width*height);
   int idx = 0;
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= maxX; x++) {
@@ -328,9 +328,9 @@ static void rgbImageToByteBuffers(RgbImage image, uint8_t **rBuf, uint8_t **gBuf
   int minX, maxX, minY, maxY, width = getWidth(domain), height = getHeight(domain);
   getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
 
-  *rBuf = safeMalloc(width * height);
-  *gBuf = safeMalloc(width * height);
-  *bBuf = safeMalloc(width * height);
+  *rBuf = safeMalloc(width*height);
+  *gBuf = safeMalloc(width*height);
+  *bBuf = safeMalloc(width*height);
   int idx = 0;
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= maxX; x++) {
@@ -377,7 +377,7 @@ static int addOp(int a, int b) { return a + b; }
 
 static int subtractOp(int a, int b) { return a - b; }
 
-static int multiplyOp(int a, int b) { return a * b; }
+static int multiplyOp(int a, int b) { return a*b; }
 
 static void compareDomains(IntImage imageA, IntImage imageB) {
   int minX1, maxX1, minY1, maxY1;
@@ -470,7 +470,7 @@ void flipIntImageHorizontal(IntImage *image) {
   int width = getWidth(domain);
   int height = getHeight(domain);
   for (int y = 0; y < height; y++) {
-    for (int x = 0; x <= width / 2; x++) {
+    for (int x = 0; x <= width/2; x++) {
       int a = image->pixels[y][x];
       image->pixels[y][x] = image->pixels[y][width - x - 1];
       image->pixels[y][width - x - 1] = a;
@@ -483,7 +483,7 @@ void flipIntImageVertical(IntImage *image) {
   ImageDomain domain = getIntImageDomain(*image);
   int width = getWidth(domain);
   int height = getHeight(domain);
-  for (int y = 0; y <= height / 2; y++) {
+  for (int y = 0; y <= height/2; y++) {
     for (int x = 0; x < width; x++) {
       int a = image->pixels[y][x];
       image->pixels[y][x] = image->pixels[height - y - 1][x];
@@ -530,8 +530,8 @@ static unsigned short *loadImagePGM(const char *path, int *width, int *height, i
     fatalError("loadImagePGM: corrupt PGM: maximum grey value found is %d (must be in range [0..65535]).\n");
   }
 
-  int npixels = (*width) * (*height);
-  unsigned short *buffer = malloc(npixels * sizeof(short));
+  int npixels = (*width)*(*height);
+  unsigned short *buffer = malloc(npixels*sizeof(short));
   if (magicNumber == 2) {
     int gval;
     for (int i = 0; i < npixels; i++) {
@@ -550,7 +550,7 @@ static unsigned short *loadImagePGM(const char *path, int *width, int *height, i
         fatalError("loadImagePGM: corrupt PGM, file is truncated.\n");
       }
     } else {  // 1 byte per pixel
-      unsigned char *buf = malloc(npixels * sizeof(unsigned char));
+      unsigned char *buf = malloc(npixels*sizeof(unsigned char));
       if (fread(buf, 1, npixels, imgFile) != npixels) {
         fatalError("loadImagePGM: corrupt PGM, file is truncated.\n");
       }
@@ -592,8 +592,8 @@ static unsigned short *loadImagePBM(const char *path, int *width, int *height) {
   if (fscanf(imgFile, "%d %d\n", width, height) != 2) {
     fatalError("loadImagePBM: corrupt PBM: no file dimensions found.\n");
   }
-  int npixels = (*width) * (*height);
-  unsigned short *buffer = malloc(npixels * sizeof(short));
+  int npixels = (*width)*(*height);
+  unsigned short *buffer = malloc(npixels*sizeof(short));
   if (magicNumber == 1) {
     for (int i = 0; i < npixels; i++) {
       char bit;
@@ -708,7 +708,7 @@ static void saveImagePGMasP5(const char *path, int width, int height, unsigned s
   }
   fprintf(pgmFile, "P5\n%d %d\n", width, height);
 
-  int npixels = (width) * (height);
+  int npixels = (width)*(height);
   unsigned short max = buffer[0];
   for (int i = 0; (i < npixels) && (max < 65535); i++) {
     max = (buffer[i] > max ? buffer[i] : max);
@@ -734,7 +734,7 @@ static void saveImagePGMasP2(const char *path, int width, int height, unsigned s
   }
   fprintf(pgmFile, "P2\n%d %d\n", width, height);
 
-  int npixels = (width) * (height);
+  int npixels = (width)*(height);
   unsigned short max = buffer[0];
   for (int i = 0; (i < npixels) && (max < 65535); i++) {
     max = (buffer[i] > max ? buffer[i] : max);
@@ -756,7 +756,7 @@ static void saveIntImagePGM(IntImage image, int magicNumber, const char *path) {
   int minX, maxX, minY, maxY, minVal, maxVal, width, height, npixels;
   width = getWidth(domain);
   height = getHeight(domain);
-  npixels = width * height;
+  npixels = width*height;
   getImageDomainValues(getIntImageDomain(image), &minX, &maxX, &minY, &maxY);
   getMinMax(image, &minVal, &maxVal);
 
@@ -771,7 +771,7 @@ static void saveIntImagePGM(IntImage image, int magicNumber, const char *path) {
       if (maxVal > 65535) maxVal = 65535;
       warning("saveIntImagePGM: image %s is clamped to [0,%d].\n", maxVal);
     }
-    unsigned short *buffer = malloc(npixels * sizeof(unsigned short));
+    unsigned short *buffer = malloc(npixels*sizeof(unsigned short));
     int idx = 0;
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
@@ -794,7 +794,7 @@ static void saveIntImagePBM(IntImage image, int magicNumber, const char *path) {
   int minX, maxX, minY, maxY, minVal, maxVal, width, height, npixels;
   width = getWidth(domain);
   height = getHeight(domain);
-  npixels = width * height;
+  npixels = width*height;
   getImageDomainValues(getIntImageDomain(image), &minX, &maxX, &minY, &maxY);
   getMinMax(image, &minVal, &maxVal);
 
@@ -803,7 +803,7 @@ static void saveIntImagePBM(IntImage image, int magicNumber, const char *path) {
     if (maxVal > 1) maxVal = 1;
     warning("saveIntImagePBM: image %s is clamped to [0,%d].\n", path, maxVal);
   }
-  uint8_t *buffer = malloc(npixels * sizeof(uint8_t));
+  uint8_t *buffer = malloc(npixels*sizeof(uint8_t));
 
   int idx = 0;
   for (int y = minY; y <= maxY; y++) {
@@ -850,7 +850,7 @@ Histogram createHistogram(IntImage image) {
   getImageDomainValues(getIntImageDomain(image), &minX, &maxX, &minY, &maxY);
 
   int histSize = maxRange - minRange;
-  int *frequencies = safeCalloc(histSize * sizeof(int));
+  int *frequencies = safeCalloc(histSize*sizeof(int));
   Histogram histogram;
   histogram.frequencies = frequencies;
   histogram.minRange = minRange;
@@ -872,9 +872,9 @@ void createRgbHistograms(RgbImage image, Histogram *redHist, Histogram *greenHis
   getImageDomainValues(getRgbImageDomain(image), &minX, &maxX, &minY, &maxY);
 
   int histSize = maxRange - minRange;
-  int *redFrequencies = safeCalloc(histSize * sizeof(int));
-  int *greenFrequencies = safeCalloc(histSize * sizeof(int));
-  int *blueFrequencies = safeCalloc(histSize * sizeof(int));
+  int *redFrequencies = safeCalloc(histSize*sizeof(int));
+  int *greenFrequencies = safeCalloc(histSize*sizeof(int));
+  int *blueFrequencies = safeCalloc(histSize*sizeof(int));
   redHist->frequencies = redFrequencies;
   redHist->minRange = minRange;
   redHist->maxRange = maxRange;
@@ -899,7 +899,7 @@ void createRgbHistograms(RgbImage image, Histogram *redHist, Histogram *greenHis
 
 Histogram createEmptyHistogram(int minRange, int maxRange) {
   int histSize = maxRange - minRange;
-  int *frequencies = safeCalloc(histSize * sizeof(int));
+  int *frequencies = safeCalloc(histSize*sizeof(int));
   Histogram histogram;
   histogram.frequencies = frequencies;
   histogram.minRange = minRange;
@@ -1169,11 +1169,11 @@ static unsigned short *loadImagePPM(const char *path, int *width, int *height, i
     fatalError("loadImagePPM: corrupt PPM: maximum value found is %d (must be in range [0..65535]).\n");
   }
 
-  int npixels = (*width) * (*height);
-  unsigned short *buffer = malloc(3 * npixels * sizeof(short));
+  int npixels = (*width)*(*height);
+  unsigned short *buffer = malloc(3*npixels*sizeof(short));
   if (magicNumber == 3) {
     int gval;
-    for (int i = 0; i < 3 * npixels; i++) {
+    for (int i = 0; i < 3*npixels; i++) {
       if (fscanf(imgFile, "%d", &gval) != 1) {
         fatalError("loadImagePPM: corrupt PPM: non numeric data found in PPM image (P3 type).\n");
       }
@@ -1185,15 +1185,15 @@ static unsigned short *loadImagePPM(const char *path, int *width, int *height, i
   } else {
     // magicnumber == 6
     if (*maxVal > 255) {  // 2 bytes per pixel, i.e. short
-      if (fread(buffer, 2, 3 * npixels, imgFile) != 3 * npixels) {
+      if (fread(buffer, 2, 3*npixels, imgFile) != 3*npixels) {
         fatalError("loadImagePPM: corrupt PPM, file is truncated.\n");
       }
     } else {  // 1 byte per pixel
-      unsigned char *buf = malloc(3 * npixels * sizeof(unsigned char));
-      if (fread(buf, 1, 3 * npixels, imgFile) != 3 * npixels) {
+      unsigned char *buf = malloc(3*npixels*sizeof(unsigned char));
+      if (fread(buf, 1, 3*npixels, imgFile) != 3*npixels) {
         fatalError("loadImagePPM: corrupt PPM, file is truncated.\n");
       }
-      for (int i = 0; i < 3 * npixels; i++) {
+      for (int i = 0; i < 3*npixels; i++) {
         buffer[i] = buf[i];
       }
       free(buf);
@@ -1263,20 +1263,20 @@ static void saveImagePPMasP6(const char *path, int width, int height, unsigned s
   }
   fprintf(ppmFile, "P6\n%d %d\n", width, height);
 
-  int npixels = (width) * (height);
+  int npixels = (width)*(height);
   unsigned short max = buffer[0];
-  for (int i = 0; (i < 3 * npixels) && (max < 65535); i++) {
+  for (int i = 0; (i < 3*npixels) && (max < 65535); i++) {
     max = (buffer[i] > max ? buffer[i] : max);
   }
   fprintf(ppmFile, "%d\n", max);
   if (max > 255) {
-    fwrite(buffer, 2, 3 * npixels, ppmFile);
+    fwrite(buffer, 2, 3*npixels, ppmFile);
   } else {
-    unsigned char *buf = malloc(3 * npixels);
-    for (int i = 0; i < 3 * npixels; i++) {
+    unsigned char *buf = malloc(3*npixels);
+    for (int i = 0; i < 3*npixels; i++) {
       buf[i] = buffer[i];
     }
-    fwrite(buf, 1, 3 * npixels, ppmFile);
+    fwrite(buf, 1, 3*npixels, ppmFile);
     free(buf);
   }
   fclose(ppmFile);
@@ -1289,9 +1289,9 @@ static void saveImagePPMasP3(const char *path, int width, int height, unsigned s
   }
   fprintf(ppmFile, "P3\n%d %d\n", width, height);
 
-  int npixels = (width) * (height);
+  int npixels = (width)*(height);
   unsigned short max = buffer[0];
-  for (int i = 0; (i < 3 * npixels) && (max < 65535); i++) {
+  for (int i = 0; (i < 3*npixels) && (max < 65535); i++) {
     max = (buffer[i] > max ? buffer[i] : max);
   }
   fprintf(ppmFile, "%d\n", max);
@@ -1315,7 +1315,7 @@ static void saveRgbImagePPM(RgbImage image, int magicNumber, const char *path) {
   int minX, maxX, minY, maxY, minVal, maxVal, width, height, npixels;
   width = getWidth(domain);
   height = getHeight(domain);
-  npixels = width * height;
+  npixels = width*height;
   getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   getRgbMinMax(image, &minVal, &maxVal);
 
@@ -1330,7 +1330,7 @@ static void saveRgbImagePPM(RgbImage image, int magicNumber, const char *path) {
       if (maxVal > 65535) maxVal = 65535;
       warning("saveRgbImagePPM: image %s is clamped to [0,%d].\n", maxVal);
     }
-    unsigned short *buffer = malloc(3 * npixels * sizeof(unsigned short));
+    unsigned short *buffer = malloc(3*npixels*sizeof(unsigned short));
     int idx = 0;
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
@@ -1362,7 +1362,7 @@ void saveRgbImage(RgbImage image, const char *path) {
     saveRgbImagePPM(image, 6, path);
   } else {
     fatalError("saveRgbImage: filename '%s' is not a ppm file.\n", path);
-	}
+  }
 }
 
 void saveRgbImagePPMRaw(RgbImage image, const char *path) { saveRgbImagePPM(image, 6, path); }
@@ -1481,7 +1481,7 @@ void flipRgbImageHorizontal(RgbImage *image) {
   int width = getWidth(domain);
   int height = getHeight(domain);
   for (int y = 0; y < height; y++) {
-    for (int x = 0; x <= width / 2; x++) {
+    for (int x = 0; x <= width/2; x++) {
       int a = image->red[y][x];
       image->red[y][x] = image->red[y][width - x - 1];
       image->red[y][width - x - 1] = a;
@@ -1500,7 +1500,7 @@ void flipRgbImageVertical(RgbImage *image) {
   ImageDomain domain = getRgbImageDomain(*image);
   int width = getWidth(domain);
   int height = getHeight(domain);
-  for (int y = 0; y <= height / 2; y++) {
+  for (int y = 0; y <= height/2; y++) {
     for (int x = 0; x < width; x++) {
       int a = image->red[y][x];
       image->red[y][x] = image->red[height - y - 1][x];
@@ -1588,11 +1588,11 @@ IntImage dt8RosenfeldPfaltz(int foreground, IntImage im) {
 /** Euclidean distance transform ****************************************/
 
 /* The Euclidean distance transform according to
- * Arnold Meijster, Jos BTM Roerdink, and Wim H Hesselink.
- * "A general algorithm for computing distance transforms
- * in linear time.", In: Mathematical Morphology and its
- * Applications to Image and Signal Processing, J. Goutsias,
- * L. Vincent, and D.S. Bloomberg (eds.), Kluwer, 2000, pp. 331-340.
+*Arnold Meijster, Jos BTM Roerdink, and Wim H Hesselink.
+*"A general algorithm for computing distance transforms
+*in linear time.", In: Mathematical Morphology and its
+*Applications to Image and Signal Processing, J. Goutsias,
+*L. Vincent, and D.S. Bloomberg (eds.), Kluwer, 2000, pp. 331-340.
  */
 
 /*********************** Distance dependant functions *********************/
@@ -1602,7 +1602,7 @@ static IntImage dtMeijsterRoerdinkHesselink(int takeSquareRoot, int foreground, 
 
   int width = getWidth(domain);
   int height = getHeight(domain);
-  int minX, maxX, minY, maxY, infinity = width * width + height * height;  // or anything larger than this
+  int minX, maxX, minY, maxY, infinity = width*width + height*height;  // or anything larger than this
 
   getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
 
@@ -1618,15 +1618,15 @@ static IntImage dtMeijsterRoerdinkHesselink(int takeSquareRoot, int foreground, 
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
       int vdtval = getIntPixel(verticalDT, x, y);
-      vdtval = (vdtval < height ? vdtval * vdtval : infinity);
+      vdtval = (vdtval < height ? vdtval*vdtval : infinity);
       setIntPixel(&vdt, x, y, vdtval);
     }
   }
   freeIntImage(verticalDT);
   /* horizontal phase */
   IntImage dt = allocateIntImage(width, height, 0, infinity);
-  int *s = malloc(width * sizeof(int));
-  int *t = malloc(width * sizeof(int));
+  int *s = malloc(width*sizeof(int));
+  int *t = malloc(width*sizeof(int));
   int q;
   for (int y = 0; y < height; y++) {
     /* left-to-right scan */
@@ -1634,7 +1634,7 @@ static IntImage dtMeijsterRoerdinkHesselink(int takeSquareRoot, int foreground, 
     for (int x = 1; x < width; x++) {
       int vsq = getIntPixel(vdt, s[q], y);
       int vxy = getIntPixel(vdt, x, y);
-      while ((q >= 0) && ((t[q] - s[q]) * (t[q] - s[q]) + vsq > (t[q] - x) * (t[q] - x) + vxy)) {
+      while ((q >= 0) && ((t[q] - s[q])*(t[q] - s[q]) + vsq > (t[q] - x)*(t[q] - x) + vxy)) {
         q--;
         vsq = getIntPixel(vdt, s[q], y);
       }
@@ -1642,7 +1642,7 @@ static IntImage dtMeijsterRoerdinkHesselink(int takeSquareRoot, int foreground, 
         q = 0;
         s[0] = x;
       } else {
-        int w = 1 + (x * x - s[q] * s[q] + vxy - vsq) / (2 * (x - s[q]));
+        int w = 1 + (x*x - s[q]*s[q] + vxy - vsq)/(2*(x - s[q]));
         if (w < width) {
           q++;
           s[q] = x;
@@ -1654,7 +1654,7 @@ static IntImage dtMeijsterRoerdinkHesselink(int takeSquareRoot, int foreground, 
     int vsq = getIntPixel(vdt, s[q], y);
     if (takeSquareRoot) {
       for (int x = width - 1; x >= 0; x--) {
-        setIntPixel(&dt, x, y, 0.5 + sqrt((x - s[q]) * (x - s[q]) + vsq));
+        setIntPixel(&dt, x, y, 0.5 + sqrt((x - s[q])*(x - s[q]) + vsq));
         if (x == t[q]) {
           q--;
           vsq = getIntPixel(vdt, s[q], y);
@@ -1662,7 +1662,7 @@ static IntImage dtMeijsterRoerdinkHesselink(int takeSquareRoot, int foreground, 
       }
     } else {
       for (int x = width - 1; x >= 0; x--) {
-        setIntPixel(&dt, x, y, (x - s[q]) * (x - s[q]) + vsq);
+        setIntPixel(&dt, x, y, (x - s[q])*(x - s[q]) + vsq);
         if (x == t[q]) {
           q--;
           vsq = getIntPixel(vdt, s[q], y);
