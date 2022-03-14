@@ -169,6 +169,12 @@ IntImage allocateIntImageGrid(int minX, int maxX, int minY, int maxY, int minVal
   return image;
 }
 
+IntImage allocateIntImageGridDomain(ImageDomain domain, int minValue, int maxValue) {
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+	return allocateIntImageGrid(minX, maxX, minY, maxY, minValue, maxValue);
+}
+
 IntImage copyIntImage(IntImage image) {
   ImageDomain domain = getIntImageDomain(image);
   int minX, maxX, minY, maxY;
@@ -972,6 +978,12 @@ RgbImage allocateRgbImageGrid(int minX, int maxX, int minY, int maxY, int minVal
   image.minRange = minValue;
   image.maxRange = maxValue;
   return image;
+}
+
+RgbImage allocateRgbImageGridDomain(ImageDomain domain, int minValue, int maxValue) {
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+	return allocateRgbImageGrid(minX, maxX, minY, maxY, minValue, maxValue);
 }
 
 RgbImage allocateDefaultRgbImage(int width, int height) { return allocateRgbImage(width, height, INT_MIN, INT_MAX); }

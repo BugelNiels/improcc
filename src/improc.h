@@ -19,10 +19,10 @@
 #define IMPROC_H
 
 // Distance transform metrics
-#define MANHATTAN 0
-#define CHESSBOARD 1
-#define EUCLID 2
-#define SQEUCLID 3
+#define SQEUCLID 0
+#define EUCLID 1
+#define MANHATTAN 2
+#define CHESSBOARD 3
 
 #include "stdio.h"
 
@@ -101,6 +101,16 @@ IntImage copyIntImage(IntImage image);
  */
 
 IntImage allocateIntImageGrid(int minX, int maxX, int minY, int maxY, int minValue, int maxValue);
+
+/**
+ * @brief Allocates an empty image in the domain [minX...maxX] x [minY..maxY] with the specified parameters.
+ *
+ * @param domain Domain the image should have
+* @param minValue The minimum possible value this image should be able to contain.
+ * @param maxValue The maximum possible value this image should be able to contain.
+ * @return IntImage A newly allocated IntImage. Note that you should free the resulting image when you are done with it.
+ */
+IntImage allocateIntImageGridDomain(ImageDomain domain, int minValue, int maxValue);
 
 /**
  * @brief Frees the memory used by the provided image.
@@ -532,6 +542,16 @@ RgbImage copyRgbImage(RgbImage image);
  */
 
 RgbImage allocateRgbImageGrid(int minX, int maxX, int minY, int maxY, int minValue, int maxValue);
+
+/**
+ * @brief Allocates an empty image in the domain [minX...maxX] x [minY..maxY] with the specified parameters.
+ *
+ * @param domain The domain the image should have.
+ * @param minValue The minimum possible value this image should be able to contain.
+ * @param maxValue The maximum possible value this image should be able to contain.
+ * @return RgbImage A newly allocated RgbImage. Note that you should free the resulting image when you are done with it.
+ */
+RgbImage allocateRgbImageGridDomain(ImageDomain domain, int minValue, int maxValue);
 /**
  * @brief Frees the memory used by the provided image.
  *
