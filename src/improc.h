@@ -9,7 +9,7 @@
  * Whereas traditional images have an x domain of [0..width) and a y domain
  * of [0..height), the images in this framework have an x domain of [minX..maxX] and a y domain of [minY..maxY]. This
  * means that these images can work with negative indices if the image domain allows for it.
- * @version 1.0
+ * @version 3.0
  * @date 2022-02-21
  *
  * @copyright Copyright (c) 2022
@@ -24,7 +24,8 @@
 #define MANHATTAN 2
 #define CHESSBOARD 3
 
-#include "stdio.h"
+#include <complex.h>
+#include <stdio.h>
 
 typedef struct ImageDomain {
   int minX, maxX;
@@ -44,6 +45,11 @@ typedef struct RgbImage {
   int **blue;
   int minRange, maxRange;
 } RgbImage;
+
+typedef struct ComplexImage {
+  ImageDomain domain;
+  double complex **pixels;
+} ComplexImage;
 
 typedef struct Histogram {
   int *frequencies;
@@ -106,7 +112,7 @@ IntImage allocateIntImageGrid(int minX, int maxX, int minY, int maxY, int minVal
  * @brief Allocates an empty image in the domain [minX...maxX] x [minY..maxY] with the specified parameters.
  *
  * @param domain Domain the image should have
-* @param minValue The minimum possible value this image should be able to contain.
+ * @param minValue The minimum possible value this image should be able to contain.
  * @param maxValue The maximum possible value this image should be able to contain.
  * @return IntImage A newly allocated IntImage. Note that you should free the resulting image when you are done with it.
  */
@@ -136,6 +142,7 @@ int getMinY(ImageDomain domain);
 int getMaxY(ImageDomain domain);
 int getWidth(ImageDomain domain);
 int getHeight(ImageDomain domain);
+void getWidthHeight(ImageDomain domain, int *width, int *height);
 
 /**
  * @brief Quality of life function. Puts the properties of the image domain into the provided arguments.
@@ -178,11 +185,23 @@ void getDynamicRange(IntImage image, int *minRange, int *maxRange);
  */
 int getIntPixel(IntImage image, int x, int y);
 
+/**
+ * @brief Retrieves the pixel value of the image at the provided coordinates without taking into consideration the image
+ * domain. This means that the x and y should fall within the range [0..width) and [0..height) respectively.
+ *
+ * @param image The image from which to retrieve the pixel value.
+ * @param x The x coordinate of the pixel to retrieve.
+ * @param y The y coordinate of the pixel to retrieve.
+ * @return int The grey value at (x,y).
+ */
+int getIntPixelI(IntImage image, int x, int y);
+
 /* ----------------------------- Image Setters ----------------------------- */
 
 /**
- * @brief Set the grey value of the image at the provided coordinates. Note that x and y can be negative if the
- * image domain allows for this. Additionally, the grey value should fit in the dynamic range of the image.
+ * @brief Set the grey value of the image at the provided coordinateswithout taking into consideration the image
+ * domain. This means that the x and y should fall within the range [0..width) and [0..height) respectively.
+ * Additionally, the grey value should fit in the dynamic range of the image.
  *
  * @param image The image in which to set the pixel value.
  * @param x The x coordinate of the pixel to set.
@@ -190,6 +209,17 @@ int getIntPixel(IntImage image, int x, int y);
  * @param greyValue The grey value to put at (x,y).
  */
 void setIntPixel(IntImage *image, int x, int y, int greyValue);
+
+/**
+ * @brief Set the grey value of the image at the provided coordinates. Note that the x and y should fall within the
+ * range [0..width) and [0..height) respectively.
+ *
+ * @param image The image in which to set the pixel value.
+ * @param x The x coordinate of the pixel to set.
+ * @param y The y coordinate of the pixel to set.
+ * @param greyValue The grey value to put at (x,y).
+ */
+void setIntPixelI(IntImage *image, int x, int y, int greyValue);
 
 /**
  * @brief Sets all the pixels in the provided image to the provided grey value. Note that the grey value should fit in
@@ -591,6 +621,19 @@ void getRgbDynamicRange(RgbImage image, int *minRange, int *maxRange);
  */
 void getRgbPixel(RgbImage image, int x, int y, int *r, int *g, int *b);
 
+/**
+ * @brief Retrieves the rgb values of the image at the provided coordinates without taking into consideration the image
+ * domain. This means that the x and y should fall within the range [0..width) and [0..height) respectively.
+ *
+ * @param image The image from which to retrieve the rgb value.
+ * @param x The x coordinate of the pixel to retrieve.
+ * @param y The y coordinate of the pixel to retrieve.
+ * @param r The red channel value at (x,y) will be put here.
+ * @param g The green channel value at (x,y) will be put here.
+ * @param b The blue channel value at (x,y) will be put here.
+ */
+void getRgbPixelI(RgbImage image, int x, int y, int *r, int *g, int *b);
+
 /* ----------------------------- Image Setters ----------------------------- */
 
 /**
@@ -605,6 +648,20 @@ void getRgbPixel(RgbImage image, int x, int y, int *r, int *g, int *b);
  * @param b The blue channel value at (x,y).
  */
 void setRgbPixel(RgbImage *image, int x, int y, int r, int g, int b);
+
+/**
+ * @brief Set the rgb value of the image at the provided coordinates without taking into consideration the image
+ * domain. This means that the x and y should fall within the range [0..width) and [0..height) respectively.
+ * Additionally, the rgb value should fit in the dynamic range of the image.
+ *
+ * @param image The image from which to retrieve the rgb value.
+ * @param x The x coordinate of the pixel to retrieve.
+ * @param y The y coordinate of the pixel to retrieve.
+ * @param r The red channel value at (x,y).
+ * @param g The green channel value at (x,y).
+ * @param b The blue channel value at (x,y).
+ */
+void setRgbPixelI(RgbImage *image, int x, int y, int r, int g, int b);
 
 /**
  * @brief Sets all the pixels in the provided image to the provided rgb value. Note that the rgb values should fit in
@@ -790,5 +847,225 @@ void flipRgbImageHorizontal(RgbImage *image);
  * @param image The image to flip.
  */
 void flipRgbImageVertical(RgbImage *image);
+
+/* ----------------------------- Complex Image ----------------------------- */
+
+/**
+ * @brief Allocates an empty complex image in the domain [0...width) x [0..height) with the specified parameters.
+ *
+ * @param width The width of the image in pixels.
+ * @param height The height of the image in pixels.
+ * @return ComplexImage A newly allocated ComplexImage. Note that you should free the resulting image when you are done
+ * with it.
+ */
+ComplexImage allocateComplexImage(int width, int height);
+
+/**
+ * @brief Creates a copy of the provided image.
+ *
+ * @param image The image to copy
+ * @return ComplexImage A copy of the provided image
+ */
+ComplexImage copyComplexImage(ComplexImage image);
+
+/**
+ * @brief Allocates an empty complex image in the domain [minX...maxX] x [minY..maxY] with the specified parameters.
+ *
+ * @param minX The start of the image domain in the x direction.
+ * @param maxX The end of the image domain in the x direction.
+ * @param minY The start of the image domain in the y direction.
+ * @param maxY The end of the image domain in the y direction.
+ * @return ComplexImage A newly allocated ComplexImage. Note that you should free the resulting image when you are done
+ * with it.
+ */
+
+ComplexImage allocateComplexImageGrid(int minX, int maxX, int minY, int maxY);
+
+/**
+ * @brief Allocates an empty complex image in the domain [minX...maxX] x [minY..maxY] with the specified parameters.
+ *
+ * @param domain Domain the image should have
+ * @return ComplexImage A newly allocated ComplexImage. Note that you should free the resulting image when you are done
+ * with it.
+ */
+ComplexImage allocateComplexImageGridDomain(ImageDomain domain);
+
+/**
+ * @brief Frees the memory used by the provided image.
+ *
+ * @param image The image for which to free the memory.
+ */
+void freeComplexImage(ComplexImage image);
+
+/* ----------------------------- Image Getters ----------------------------- */
+
+/**
+ * @brief Retrieve the domain information of the provided image.
+ *
+ * @param image The image from which to retrieve the domain.
+ * @return ImageDomain The domain of the image.
+ */
+ImageDomain getComplexImageDomain(ComplexImage image);
+
+/**
+ * @brief Puts the minimum real value and maximum real value found in the provided image into the minimalValue and
+ * maximalValue respectively.
+ *
+ * @param image The image in which to find the minimum and maximum values.
+ * @param minimalValue The resulting minimal value will be put here.
+ * @param maximalValue The resulting maximal value will be put here.
+ */
+void getComplexMinMax(ComplexImage image, double *minimalValue, double *maximalValue);
+
+/**
+ * @brief Retrieves the complex value of the image at the provided coordinates. Note that x and y can be negative if the
+ * image domain allows for this.
+ *
+ * @param image The image from which to retrieve the pixel value.
+ * @param x The x coordinate of the pixel to retrieve.
+ * @param y The y coordinate of the pixel to retrieve.
+ * @return double complex The complex value at (x,y).
+ */
+double complex getComplexPixel(ComplexImage image, int x, int y);
+
+/**
+ * @brief Retrieves the complex value of the image at the provided coordinates without taking into consideration the
+ * image domain. This means that the x and y should fall within the range [0..width) and [0..height) respectively.
+ *
+ * @param image The image from which to retrieve the pixel value.
+ * @param x The x coordinate of the pixel to retrieve.
+ * @param y The y coordinate of the pixel to retrieve.
+ * @return double complex The complex value at (x,y).
+ */
+double complex getComplexPixelI(ComplexImage image, int x, int y);
+
+/* ----------------------------- Image Setters ----------------------------- */
+
+/**
+ * @brief Set the complex value of the image at the provided coordinates. Note that x and y can be negative if the
+ * image domain allows for this.
+ *
+ * @param image The image in which to set the pixel value.
+ * @param x The x coordinate of the pixel to set.
+ * @param y The y coordinate of the pixel to set.
+ * @param complexValue The complex value to put at (x,y).
+ */
+void setComplexPixel(ComplexImage *image, int x, int y, double complex complexValue);
+
+/**
+ * @brief Set the complex value of the image at the provided coordinates without taking into consideration the image
+ * domain. This means that the x and y should fall within the range [0..width) and [0..height) respectively.
+ *
+ * @param image The image in which to set the pixel value.
+ * @param x The x coordinate of the pixel to set.
+ * @param y The y coordinate of the pixel to set.
+ * @param complexValue The complex value to put at (x,y).
+ */
+void setComplexPixelI(ComplexImage *image, int x, int y, double complex complexValue);
+
+/**
+ * @brief Sets all the pixels in the provided image to the provided complex value.
+ *
+ * @param image The image in which to set all the pixel values.
+ * @param complexValue The complex value to put in the image.
+ */
+void setAllComplexPixels(ComplexImage *image, double complex complexValue);
+
+/* ----------------------------- Image Printing + Viewing ----------------------------- */
+
+/**
+ * @brief Prints all the complex values in the provided image to stdout. Every row is put on a new line.
+ *
+ * @param image The image to print.
+ */
+void printComplexBuffer(ComplexImage image);
+
+/**
+ * @brief Prints a LaTeX compatible table representation of the provided image to stdout.
+ *
+ * @param image The image to print the LaTeX table of.
+ */
+void printComplexImageLatexTable(ComplexImage image);
+
+/**
+ * @brief Prints a LaTeX compatible table representation of the provided image to the provided file stream.
+ *
+ * @param out File stream to print the image to.
+ * @param image The image to print the LaTeX table of.
+ */
+void printComplexLatexTableToFile(FILE *out, ComplexImage image);
+
+/**
+ * @brief Opens a window that allows the user to view the image. Note that this uses OpenGL which in turn allocates
+ * memory that cannot be freed. If you want to check for memory leaks, make sure that you do not run any image displays.
+ * Only the real values of the complex image are displayed.
+ *
+ * @param image The image to view
+ * @param windowTitle The title of the window.
+ */
+void displayComplexImage(ComplexImage image, const char *windowTitle);
+
+/* ----------------------------- Image Saving ----------------------------- */
+
+/**
+ * @brief Saves an image at the provided location. Supported extension: .pgm. This will save the netpbm
+ * files as their binary formats. Note that only (rounded) real values are stored.
+ *
+ * @param image The images to save.
+ * @param path The location to save the image at.
+ */
+void saveComplexImage(ComplexImage image, const char *path);
+
+/**
+ * @brief Saves an image at the provided location. The location must be a .pgm file. Pixels values are stored as raw
+ * bytes in the file. Note that only (rounded) real values are stored.
+ *
+ * @param image The images to save.
+ * @param path The location to save the image at.
+ */
+void saveComplexImagePGMRaw(ComplexImage image, const char *path);
+
+/**
+ * @brief Saves an image at the provided location. The location must be a .pgm file. Pixels values are stored as ascii
+ * (human readable) values in the file. Note that only (rounded) real values are stored.
+ *
+ * @param image The images to save.
+ * @param path The location to save the image at.
+ */
+void saveComplexImagePGMAscii(ComplexImage image, const char *path);
+
+/* ----------------------------- Complex Image Transformations ----------------------------- */
+
+/**
+ * @brief Performs the Fast Fourier Transform on the provided input image. Note that the image dimensions must be a
+ * power of 2.
+ *
+ * @param image The input image
+ * @return ComplexImage The fourier transform of the input image.
+ */
+ComplexImage fft2D(IntImage image);
+
+/**
+ * @brief Performs the inverse Fast Fourier Transform on the provided complex image.
+ * Note that the resulting image has an infinite domain and you may have to do manual conversion.
+ *
+ * @param image The input complex image
+ * @return IntImage The inverse fourier transform of the input complex image.
+ */
+IntImage ifft2D(ComplexImage image);
+
+/**
+ * @brief Swaps quadrants 1 & 3 and 2 & 4 to center the DC component in the image.
+ *
+ * @param image The input complex image
+ */
+void fft2Dshift(ComplexImage *image);
+
+/**
+ * @brief Reverses the centering of the DC component.
+ *
+ * @param image The input complex image
+ */
+void ifft2Dshift(ComplexImage *image);
 
 #endif  // IMPROC_H

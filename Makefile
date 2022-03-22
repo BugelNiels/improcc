@@ -7,9 +7,16 @@ CC= gcc
 
 # define any compile-time flags
 # For debugging purposes you can add the -g flag here
-# if you want to increase the performance of the framework, add the "-DFAST" flag here.
+# Additionally, if you want to increase the performance of the framework, add the "-DFAST" flag here.
 # Note that this disables domain and dynamic range checks!
-CFLAGS= -O2 -g -Wall -pedantic
+CFLAGS= -Wall -pedantic
+
+# Make with "make RELEASE=1" for release build
+ifndef RELEASE
+	CFLAGS+= -g -O2
+else
+	CFLAGS+= -O3 -DFAST
+endif
 
 # define any libraries to link into executable
 LIBS= -lm -lglut -lX11

@@ -71,6 +71,7 @@ int getMinY(ImageDomain domain);
 int getMaxY(ImageDomain domain);
 int getWidth(ImageDomain domain);
 int getHeight(ImageDomain domain);
+void getWidthHeight(ImageDomain domain, int *width, int *height);
 void getImageDomainValues(ImageDomain domain, int *minX, int *maxX, int *minY, int *maxY);
 ```
 
@@ -82,6 +83,7 @@ ___
 
 ```C
 IntImage allocateIntImageGrid(int minX, int maxX, int minY, int maxY, int minValue, int maxValue);
+IntImage allocateIntImageGridDomain(ImageDomain domain, int minValue, int maxValue);
 IntImage allocateIntImage(int width, int height, int minValue, int maxValue);
 IntImage allocateDefaultIntImage(int width, int height);
 IntImage allocateFromIntImage(IntImage image);
@@ -96,8 +98,10 @@ ImageDomain getIntImageDomain(IntImage image);
 void getMinMax(IntImage image, int *minimalValue, int *maximalValue);
 void getDynamicRange(IntImage image, int *minRange, int *maxRange);
 int getIntPixel(IntImage image, int x, int y);
+int getIntPixelI(IntImage image, int x, int y);
 
 void setIntPixel(IntImage *image, int x, int y, int greyValue);
+void setIntPixelI(IntImage *image, int x, int y, int greyValue);
 void setAllIntPixels(IntImage *image, int greyValue);
 void setDynamicRange(IntImage *image, int newMinRange, int newMaxRange);
 ```
@@ -152,6 +156,7 @@ ___
 
 ```C
 RgbImage allocateRgbImageGrid(int minX, int maxX, int minY, int maxY, int minValue, int maxValue);
+RgbImage allocateRgbImageGridDomain(ImageDomain domain, int minValue, int maxValue);
 RgbImage allocateRgbImage(int width, int height, int minValue, int maxValue);
 RgbImage allocateDefaultRgbImage(int width, int height);
 RgbImage allocateFromRgbImage(RgbImage image);
@@ -165,8 +170,10 @@ void freeRgbImage(RgbImage image);
 ImageDomain getRgbImageDomain(RgbImage image);
 void getRgbDynamicRange(RgbImage image, int *minRange, int *maxRange);
 void getRgbPixel(RgbImage image, int x, int y, int *r, int *g, int *b);
+void getRgbPixelI(RgbImage image, int x, int y, int *r, int *g, int *b);
 
 void setRgbPixel(RgbImage *image, int x, int y, int r, int g, int b);
+void setRgbPixelI(RgbImage *image, int x, int y, int r, int g, int b);
 void setAllRgbPixels(RgbImage *image, int r, int g, int b);
 ```
 
@@ -208,6 +215,58 @@ void flipRgbImageHorizontal(RgbImage *image);
 void flipRgbImageVertical(RgbImage *image);
 ```
 
+___
+
+## Complex Images
+
+**Allocation**
+
+```C
+ComplexImage allocateComplexImageGrid(int minX, int maxX, int minY, int maxY);
+ComplexImage allocateComplexImageGridDomain(ImageDomain domain);
+ComplexImage allocateComplexImage(int width, int height);
+ComplexImage copyComplexImage(ComplexImage image);
+void freeComplexImage(ComplexImage image);
+```
+
+**Getters + Setters**
+
+```C
+ImageDomain getComplexImageDomain(ComplexImage image);
+void getComplexMinMax(ComplexImage image, double *minimalValue, double *maximalValue);
+double complex getComplexPixel(ComplexImage image, int x, int y);
+double complex getComplexPixelI(ComplexImage image, int x, int y);
+
+void setComplexPixel(ComplexImage *image, int x, int y, double complex complexValue);
+void setComplexPixelI(ComplexImage *image, int x, int y, double complex complexValue);
+void setAllComplexPixels(ComplexImage *image, double complex complexValue);
+```
+
+**Printing + Viewing**
+
+```C
+void printComplexBuffer(ComplexImage image);
+void printComplexImageLatexTable(ComplexImage image);
+void printComplexLatexTableToFile(FILE *out, ComplexImage image);
+void displayComplexImage(ComplexImage image, const char *windowTitle);
+```
+
+**Saving + Loading**
+
+```C
+void saveComplexImage(ComplexImage image, const char *path);
+void saveComplexImagePGMRaw(ComplexImage image, const char *path);
+void saveComplexImagePGMAscii(ComplexImage image, const char *path);
+```
+
+**General Operations**
+
+```C
+ComplexImage fft2D(IntImage image);
+IntImage ifft2D(ComplexImage image);
+void fft2Dshift(ComplexImage *image);
+void ifft2Dshift(ComplexImage *image);
+```
 ___
 
 ## Histograms
