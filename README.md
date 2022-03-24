@@ -269,6 +269,49 @@ void ifft2Dshift(ComplexImage *image);
 ```
 ___
 
+## Double Images
+
+**Allocation**
+
+```C
+DoubleImage allocateDoubleImageGrid(int minX, int maxX, int minY, int maxY, double minValue, double maxValue);
+DoubleImage allocateDoubleImageGridDomain(ImageDomain domain, double minValue, double maxValue);
+DoubleImage allocateDoubleImage(int width, int height, double minValue, double maxValue);
+DoubleImage copyDoubleImage(DoubleImage image);
+void freeDoubleImage(DoubleImage image);
+```
+
+**Getters + Setters**
+
+```C
+ImageDomain getDoubleImageDomain(DoubleImage image);
+void getDoubleDynamicRange(DoubleImage image, double *minRange, double *maxRange);
+void getDoubleMinMax(DoubleImage image, double *minimalValue, double *maximalValue);
+double getDoublePixel(DoubleImage image, int x, int y);
+double getDoublePixelI(DoubleImage image, int x, int y);
+
+void setDoublePixel(DoubleImage *image, int x, int y, double val);
+void setDoublePixelI(DoubleImage *image, int x, int y, double val);
+void setAllDoublePixels(DoubleImage *image, double val);
+```
+
+**Printing + Viewing**
+
+```C
+void printDoubleBuffer(DoubleImage image);
+void printDoubleImageLatexTable(DoubleImage image);
+void printDoubleLatexTableToFile(FILE *out, DoubleImage image);
+// for viewing, you can convert it to an intImage first
+```
+
+**General Operations**
+
+```C
+DoubleImage int2DoubleImg(IntImage image);
+IntImage double2IntImg(DoubleImage image);
+```
+___
+
 ## Histograms
 
 **Creation**

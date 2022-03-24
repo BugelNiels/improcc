@@ -23,7 +23,7 @@ LIBS= -lm -lglut -lX11
 
 OS := $(shell uname)
 ifeq ($(OS),Darwin)
-  LIBS += -framework OpenGL
+	LIBS += -framework OpenGL
 else
 	LIBS += -lGL  -lGLU
   # check for Linux and run other commands

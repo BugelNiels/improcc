@@ -51,6 +51,12 @@ typedef struct ComplexImage {
   double complex **pixels;
 } ComplexImage;
 
+typedef struct DoubleImage {
+  ImageDomain domain;
+  double **pixels;
+  double minRange, maxRange;
+} DoubleImage;
+
 typedef struct Histogram {
   int *frequencies;
   int minRange, maxRange;
@@ -1067,5 +1073,179 @@ void fft2Dshift(ComplexImage *image);
  * @param image The input complex image
  */
 void ifft2Dshift(ComplexImage *image);
+
+/* ----------------------------- Double Images ----------------------------- */
+
+/**
+ * @brief Allocates an empty double image in the domain [0...width) x [0..height) with the specified parameters.
+ *
+ * @param width The width of the image in pixels.
+ * @param height The height of the image in pixels.
+ * @return DoubleImage A newly allocated DoubleImage. Note that you should free the resulting image when you are done
+ * with it.
+ */
+DoubleImage allocateDoubleImage(int width, int height, double minValue, double maxValue);
+
+/**
+ * @brief Creates a copy of the provided image.
+ *
+ * @param image The image to copy
+ * @return DoubleImage A copy of the provided image
+ */
+DoubleImage copyDoubleImage(DoubleImage image);
+
+/**
+ * @brief Allocates an empty double image in the domain [minX...maxX] x [minY..maxY] with the specified parameters.
+ *
+ * @param minX The start of the image domain in the x direction.
+ * @param maxX The end of the image domain in the x direction.
+ * @param minY The start of the image domain in the y direction.
+ * @param maxY The end of the image domain in the y direction.
+ * @return DoubleImage A newly allocated DoubleImage. Note that you should free the resulting image when you are done
+ * with it.
+ */
+
+DoubleImage allocateDoubleImageGrid(int minX, int maxX, int minY, int maxY, double minValue, double maxValue);
+
+/**
+ * @brief Allocates an empty double image in the domain [minX...maxX] x [minY..maxY] with the specified parameters.
+ *
+ * @param domain Domain the image should have
+ * @return DoubleImage A newly allocated DoubleImage. Note that you should free the resulting image when you are done
+ * with it.
+ */
+DoubleImage allocateDoubleImageGridDomain(ImageDomain domain, double minValue, double maxValue);
+
+/**
+ * @brief Frees the memory used by the provided image.
+ *
+ * @param image The image for which to free the memory.
+ */
+void freeDoubleImage(DoubleImage image);
+
+/* ----------------------------- Image Getters ----------------------------- */
+
+/**
+ * @brief Retrieve the dynamic range of the provided image.
+ *
+ * @param image The image from which to retrieve the dynamic range.
+ * @param minRange The minimum possible value this image is able to contain will be put here.
+ * @param maxRange The maximum possible value this image is able to contain will be put here.
+ */
+void getDoubleDynamicRange(DoubleImage image, double *minRange, double *maxRange);
+
+/**
+ * @brief Retrieve the domain information of the provided image.
+ *
+ * @param image The image from which to retrieve the domain.
+ * @return ImageDomain The domain of the image.
+ */
+ImageDomain getDoubleImageDomain(DoubleImage image);
+
+/**
+ * @brief Puts the minimum real value and maximum real value found in the provided image into the minimalValue and
+ * maximalValue respectively.
+ *
+ * @param image The image in which to find the minimum and maximum values.
+ * @param minimalValue The resulting minimal value will be put here.
+ * @param maximalValue The resulting maximal value will be put here.
+ */
+void getDoubleMinMax(DoubleImage image, double *minimalValue, double *maximalValue);
+
+/**
+ * @brief Retrieves the double value of the image at the provided coordinates. Note that x and y can be negative if the
+ * image domain allows for this.
+ *
+ * @param image The image from which to retrieve the pixel value.
+ * @param x The x coordinate of the pixel to retrieve.
+ * @param y The y coordinate of the pixel to retrieve.
+ * @return double The value at (x,y).
+ */
+double getDoublePixel(DoubleImage image, int x, int y);
+
+/**
+ * @brief Retrieves the double value of the image at the provided coordinates without taking into consideration the
+ * image domain. This means that the x and y should fall within the range [0..width) and [0..height) respectively.
+ *
+ * @param image The image from which to retrieve the pixel value.
+ * @param x The x coordinate of the pixel to retrieve.
+ * @param y The y coordinate of the pixel to retrieve.
+ * @return double The double value at (x,y).
+ */
+double getDoublePixelI(DoubleImage image, int x, int y);
+
+/* ----------------------------- Image Setters ----------------------------- */
+
+/**
+ * @brief Set the double value of the image at the provided coordinates. Note that x and y can be negative if the
+ * image domain allows for this.
+ *
+ * @param image The image in which to set the pixel value.
+ * @param x The x coordinate of the pixel to set.
+ * @param y The y coordinate of the pixel to set.
+ * @param val The double value to put at (x,y).
+ */
+void setDoublePixel(DoubleImage *image, int x, int y, double val);
+
+/**
+ * @brief Set the double value of the image at the provided coordinates without taking into consideration the image
+ * domain. This means that the x and y should fall within the range [0..width) and [0..height) respectively.
+ *
+ * @param image The image in which to set the pixel value.
+ * @param x The x coordinate of the pixel to set.
+ * @param y The y coordinate of the pixel to set.
+ * @param val The double value to put at (x,y).
+ */
+void setDoublePixelI(DoubleImage *image, int x, int y, double val);
+
+/**
+ * @brief Sets all the pixels in the provided image to the provided double value.
+ *
+ * @param image The image in which to set all the pixel values.
+ * @param val The double value to put in the image.
+ */
+void setAllDoublePixels(DoubleImage *image, double val);
+
+/* ----------------------------- Image Printing + Viewing ----------------------------- */
+
+/**
+ * @brief Prints all the double values in the provided image to stdout. Every row is put on a new line.
+ *
+ * @param image The image to print.
+ */
+void printDoubleBuffer(DoubleImage image);
+
+/**
+ * @brief Prints a LaTeX compatible table representation of the provided image to stdout.
+ *
+ * @param image The image to print the LaTeX table of.
+ */
+void printDoubleImageLatexTable(DoubleImage image);
+
+/**
+ * @brief Prints a LaTeX compatible table representation of the provided image to the provided file stream.
+ *
+ * @param out File stream to print the image to.
+ * @param image The image to print the LaTeX table of.
+ */
+void printDoubleLatexTableToFile(FILE *out, DoubleImage image);
+
+/* ----------------------------- Image Conversion ----------------------------- */
+
+/**
+ * @brief Produces a new DoubleImage from the provided IntImage.
+ *
+ * @param image The IntImage to convert.
+ * @return DoubleImage The double version of the IntImage
+ */
+DoubleImage int2DoubleImg(IntImage image);
+
+/**
+ * @brief Produces a new IntImage from the provided DoubleImage.
+ *
+ * @param image The DoubleImage to convert.
+ * @return IntImage The double version of the DoubleImage
+ */
+IntImage double2IntImg(DoubleImage image);
 
 #endif  // IMPROC_H

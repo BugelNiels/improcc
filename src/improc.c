@@ -61,6 +61,15 @@ static int **allocIntMatrix(int width, int height) {
   return matrix;
 }
 
+static double **allocDoubleMatrix(int width, int height) {
+  double **matrix = safeMalloc(height * sizeof(double *) + width * height * sizeof(double));
+  double *p = (double *)(matrix + height);
+  for (int y = 0; y < height; y++) {
+    matrix[y] = p + width * y;
+  }
+  return matrix;
+}
+
 static double complex **allocComplexMatrix(int width, int height) {
   double complex **matrix = safeMalloc(height * sizeof(double complex *) + width * height * sizeof(double complex));
   double complex *p = (double complex *)(matrix + height);
@@ -285,12 +294,12 @@ inline void setIntPixelI(IntImage *image, int x, int y, int greyValue) {
   image->pixels[y][x] = greyValue;
 #else
   if (greyValue < image->minRange) {
-    warning("setIntPixel: value %d is outside dynamic range [%d,%d]: clamped to %d\n", greyValue, image->minRange,
+    warning("setIntPixelI: value %d is outside dynamic range [%d,%d]: clamped to %d\n", greyValue, image->minRange,
             image->maxRange, image->minRange);
     greyValue = image->minRange;
   }
   if (greyValue > image->maxRange) {
-    warning("setIntPixel: value %d is outside dynamic range [%d,%d]: clamped to %d\n", greyValue, image->minRange,
+    warning("setIntPixelI: value %d is outside dynamic range [%d,%d]: clamped to %d\n", greyValue, image->minRange,
             image->maxRange, image->maxRange);
     greyValue = image->maxRange - 1;
   }
@@ -2076,8 +2085,8 @@ static int isPowerOfTwo(int n) {
 
 ComplexImage fft2D(IntImage image) {
   ImageDomain domain = getIntImageDomain(image);
-	int width, height;
-	getWidthHeight(domain, &width, &height);
+  int width, height;
+  getWidthHeight(domain, &width, &height);
   if (!(isPowerOfTwo(width) && isPowerOfTwo(height))) {
     fatalError(
         "Fatal error in fft2D: image width and height need to be powers of two. "
@@ -2113,15 +2122,14 @@ ComplexImage fft2D(IntImage image) {
 // inverse fast fourier transform
 IntImage ifft2D(ComplexImage image) {
   ImageDomain domain = getComplexImageDomain(image);
-	int width, height;
-	getWidthHeight(domain, &width, &height);
+  int width, height;
+  getWidthHeight(domain, &width, &height);
   if (!(isPowerOfTwo(width) && isPowerOfTwo(height))) {
     fatalError(
         "Fatal error in fft2D: image width and height need to be powers of two. "
         "(width=%d, height=%d)\n",
         width, height);
   }
-
 
   IntImage im = allocateIntImageGridDomain(domain, INT_MIN, INT_MAX);
 
@@ -2177,3 +2185,211 @@ void fft2Dshift(ComplexImage *image) {
 }
 // inverse shift
 void ifft2Dshift(ComplexImage *image) { fft2Dshift(image); }
+
+DoubleImage allocateDoubleImage(int width, int height, double minValue, double maxValue) {
+  return allocateDoubleImageGrid(0, width - 1, 0, height - 1, minValue, maxValue);
+}
+
+DoubleImage allocateDoubleImageGrid(int minX, int maxX, int minY, int maxY, double minValue, double maxValue) {
+  DoubleImage image;
+  ImageDomain domain = initImageDomain(minX, maxX, minY, maxY);
+  image.domain = domain;
+  image.pixels = allocDoubleMatrix(getWidth(domain), getHeight(domain));
+  // Dynamic range grey values
+  image.minRange = minValue;
+  image.maxRange = maxValue;
+  return image;
+}
+
+DoubleImage allocateDoubleImageGridDomain(ImageDomain domain, double minValue, double maxValue) {
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+  return allocateDoubleImageGrid(minX, maxX, minY, maxY, minValue, maxValue);
+}
+
+void freeDoubleImage(DoubleImage image) { free(image.pixels); }
+
+void getDoubleDynamicRange(DoubleImage image, double *minRange, double *maxRange) {
+  *minRange = image.minRange;
+  *maxRange = image.maxRange;
+}
+
+ImageDomain getDoubleImageDomain(DoubleImage image) { return image.domain; }
+
+void getDoubleMinMax(DoubleImage image, double *minimalValue, double *maximalValue) {
+  int minX, maxX, minY, maxY, minVal, maxVal;
+  getImageDomainValues(getDoubleImageDomain(image), &minX, &maxX, &minY, &maxY);
+  minVal = maxVal = getDoublePixel(image, minX, minY);
+  for (int y = minY; y <= maxY; y++) {
+    for (int x = minX; x <= maxX; x++) {
+      int val = getDoublePixel(image, x, y);
+      minVal = (val < minVal ? val : minVal);
+      maxVal = (val > maxVal ? val : maxVal);
+    }
+  }
+  *minimalValue = minVal;
+  *maximalValue = maxVal;
+}
+
+double getDoublePixel(DoubleImage image, int x, int y) {
+#if FAST
+  return image.pixels[y - image.domain.minY][x - image.domain.minX];
+#else
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(image.domain, &minX, &maxX, &minY, &maxY);
+  checkDomain(x, y, minX, maxX, minY, maxY);
+  return image.pixels[y - minY][x - minX];
+#endif
+}
+
+double getDoublePixelI(DoubleImage image, int x, int y) {
+#if FAST
+  return image.pixels[y][x];
+#else
+  int width, height;
+  getWidthHeight(image.domain, &width, &height);
+  checkDomainI(x, y, width, height);
+  return image.pixels[y][x];
+#endif
+}
+
+void setDoublePixel(DoubleImage *image, int x, int y, double val) {
+#if FAST
+  image->pixels[y - image->domain.minY][x - image->domain.minX] = val;
+#else
+  if (val < image->minRange) {
+    warning("setDoublePixel: value %d is outside dynamic range [%d,%d]: clamped to %d\n", val, image->minRange,
+            image->maxRange, image->minRange);
+    val = image->minRange;
+  }
+  if (val > image->maxRange) {
+    warning("setDoublePixel: value %d is outside dynamic range [%d,%d]: clamped to %d\n", val, image->minRange,
+            image->maxRange, image->maxRange);
+    val = image->maxRange - 1;
+  }
+
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(image->domain, &minX, &maxX, &minY, &maxY);
+  checkDomain(x, y, minX, maxX, minY, maxY);
+
+  x -= minX;
+  y -= minY;
+  image->pixels[y][x] = val;
+#endif
+}
+
+void setDoublePixelI(DoubleImage *image, int x, int y, double val) {
+#if FAST
+  image->pixels[y][x] = val;
+#else
+  if (val < image->minRange) {
+    warning("setDoublePixelI: value %d is outside dynamic range [%.1lf,%.1lf]: clamped to %.1lf\n", val,
+            image->minRange, image->maxRange, image->minRange);
+    val = image->minRange;
+  }
+  if (val > image->maxRange) {
+    warning("setDoublePixelI: value %d is outside dynamic range [%.1lf,%.1lf]: clamped to %.1lf\n", val,
+            image->minRange, image->maxRange, image->maxRange);
+    val = image->maxRange - 1;
+  }
+
+  int width, height;
+  getWidthHeight(image->domain, &width, &height);
+  checkDomainI(x, y, width, height);
+  image->pixels[y][x] = val;
+#endif
+}
+
+void setAllDoublePixels(DoubleImage *image, double val) {
+  if (val < image->minRange) {
+    warning("setAllDoublePixels: value %d is outside dynamic range [%.1lf,%.1lf]: clamped to %.1lf\n", val,
+            image->minRange, image->maxRange, image->minRange);
+    val = image->minRange;
+  }
+  if (val > image->maxRange) {
+    warning("setAllDoublePixels: value %d is outside dynamic range [%.1lf,%.1lf]: clamped to %.1lf\n", val,
+            image->minRange, image->maxRange, image->maxRange);
+    val = image->maxRange - 1;
+  }
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(getDoubleImageDomain(*image), &minX, &maxX, &minY, &maxY);
+  for (int y = minY; y <= maxY; y++) {
+    for (int x = minX; x <= maxX; x++) {
+      setDoublePixel(image, x, y, val);
+    }
+  }
+}
+
+void printDoubleBuffer(DoubleImage image) {
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(getDoubleImageDomain(image), &minX, &maxX, &minY, &maxY);
+  for (int y = minY; y <= maxY; y++) {
+    for (int x = minX; x <= maxX; x++) {
+      double val = getDoublePixel(image, x, y);
+      printf("%.2lf ", val);
+    }
+    printf("\n");
+  }
+}
+
+void printDoubleImageLatexTable(DoubleImage image) { printDoubleLatexTableToFile(stdout, image); }
+
+void printDoubleLatexTableToFile(FILE *out, DoubleImage image) {
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(getDoubleImageDomain(image), &minX, &maxX, &minY, &maxY);
+  fprintf(out, "\\begin{tabular}{|c|");
+  for (int x = minX; x <= maxX; x++) {
+    fprintf(out, "|c");
+  }
+  fprintf(out, "|}\n\\hline\n(x,y)");
+  for (int x = minX; x <= maxX; x++) {
+    fprintf(out, "&%d", x);
+  }
+  fprintf(out, "\\\\\n\\hline\n");
+  fprintf(out, "\\hline\n");
+  for (int y = minY; y <= maxY; y++) {
+    fprintf(out, "%d", y);
+    for (int x = minX; x <= maxX; x++) {
+      double val = getDoublePixel(image, x, y);
+      if ((y == 0) && (x == 0)) {  // origin
+        fprintf(out, "&{\\bf %.2lf}", val);
+      } else {
+        fprintf(out, "&%.2lf", val);
+      }
+    }
+    fprintf(out, "\\\\\\hline\n");
+  }
+  fprintf(out, "\\end{tabular}\n");
+}
+
+DoubleImage int2DoubleImg(IntImage image) {
+  ImageDomain domain = getIntImageDomain(image);
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+  int minRange, maxRange;
+  getDynamicRange(image, &minRange, &maxRange);
+  DoubleImage doubImg = allocateDoubleImageGridDomain(domain, minRange, maxRange);
+  for (int y = minY; y <= maxY; y++) {
+    for (int x = minX; x <= maxX; x++) {
+      double val = getIntPixel(image, x, y);
+      setDoublePixel(&doubImg, x, y, val);
+    }
+  }
+  return doubImg;
+}
+
+IntImage double2IntImg(DoubleImage image) {
+  ImageDomain domain = getDoubleImageDomain(image);
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+  double minRange, maxRange;
+  getDoubleDynamicRange(image, &minRange, &maxRange);
+  IntImage intImg = allocateIntImageGridDomain(domain, minRange, maxRange);
+  for (int y = minY; y <= maxY; y++) {
+    for (int x = minX; x <= maxX; x++) {
+      int val = getDoublePixel(image, x, y) + 0.5;
+      setIntPixel(&intImg, x, y, val);
+    }
+  }
+  return intImg;
+}
