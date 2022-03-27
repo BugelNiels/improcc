@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
 
 // 1D: Fast Fourier Transform (FFT)
 #define PI 3.1415926535897932384626433832795L
@@ -2207,6 +2208,18 @@ DoubleImage allocateDoubleImageGridDomain(ImageDomain domain, double minValue, d
   return allocateDoubleImageGrid(minX, maxX, minY, maxY, minValue, maxValue);
 }
 
+DoubleImage allocateDefaultDoubleImage(int width, int height) { return allocateDoubleImage(width, height, DBL_MIN, DBL_MAX); }
+
+DoubleImage allocateFromDoubleImage(DoubleImage image) {
+  ImageDomain domain = getDoubleImageDomain(image);
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+  double minRange, maxRange;
+  getDoubleDynamicRange(image, &minRange, &maxRange);
+  DoubleImage image2 = allocateDoubleImageGrid(minX, maxX, minY, maxY, minRange, maxRange);
+  return image2;
+}
+
 void freeDoubleImage(DoubleImage image) { free(image.pixels); }
 
 void getDoubleDynamicRange(DoubleImage image, double *minRange, double *maxRange) {
@@ -2392,4 +2405,81 @@ IntImage double2IntImg(DoubleImage image) {
     }
   }
   return intImg;
+}
+
+ComplexImage fft2DDouble(DoubleImage image) {
+  ImageDomain domain = getDoubleImageDomain(image);
+  int width, height;
+  getWidthHeight(domain, &width, &height);
+  if (!(isPowerOfTwo(width) && isPowerOfTwo(height))) {
+    fatalError(
+        "Fatal error in fft2D: image width and height need to be powers of two. "
+        "(width=%d, height=%d)\n",
+        width, height);
+  }
+
+  ComplexImage ft = allocateComplexImageGridDomain(domain);
+  double complex *wsp = malloc((width < height ? height : width) * sizeof(double complex));  // workspace array
+
+  // for all columns do a 1D fft
+  double complex *ftcol = malloc(height * sizeof(double complex));
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
+      ftcol[y] = getDoublePixelI(image, x, y);
+    }
+    inplaceFFT1D(height, wsp, ftcol);
+    for (int y = 0; y < height; y++) {
+      setComplexPixelI(&ft, x, y, ftcol[y]);
+    }
+  }
+  free(ftcol);
+
+  // for all rows do a 1D fft
+  for (int y = 0; y < height; y++) {
+    inplaceFFT1D(width, wsp, ft.pixels[y]);
+  }
+
+  free(wsp);
+  return ft;
+}
+
+// inverse fast fourier transform
+DoubleImage ifft2DDouble(ComplexImage image) {
+  ImageDomain domain = getComplexImageDomain(image);
+  int width, height;
+  getWidthHeight(domain, &width, &height);
+  if (!(isPowerOfTwo(width) && isPowerOfTwo(height))) {
+    fatalError(
+        "Fatal error in fft2D: image width and height need to be powers of two. "
+        "(width=%d, height=%d)\n",
+        width, height);
+  }
+
+  DoubleImage im = allocateDoubleImageGridDomain(domain, DBL_MIN, DBL_MAX);
+
+  double complex *wsp = malloc((width < height ? height : width) * sizeof(double complex));  // workspace array
+
+  // for all rows do a 1D fft
+  ComplexImage ift = copyComplexImage(image);
+  for (int y = 0; y < height; y++) {
+    inplaceInverseFFT1D(width, wsp, ift.pixels[y]);
+  }
+
+  // for all columns do an inverse 1D fft
+  double complex *ftcol = malloc(height * sizeof(double complex));
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
+      ftcol[y] = getComplexPixelI(ift, x, y);
+    }
+    inplaceInverseFFT1D(height, wsp, ftcol);
+    for (int y = 0; y < height; y++) {
+      setDoublePixelI(&im, x, y, (double)ftcol[y]);
+    }
+  }
+
+  free(ftcol);
+  freeComplexImage(ift);
+  free(wsp);
+
+  return im;
 }

@@ -1052,6 +1052,15 @@ void saveComplexImagePGMAscii(ComplexImage image, const char *path);
 ComplexImage fft2D(IntImage image);
 
 /**
+ * @brief Performs the Fast Fourier Transform on the provided input image. Note that the image dimensions must be a
+ * power of 2.
+ *
+ * @param image The input image
+ * @return ComplexImage The fourier transform of the input image.
+ */
+ComplexImage fft2DDouble(DoubleImage image);
+
+/**
  * @brief Performs the inverse Fast Fourier Transform on the provided complex image.
  * Note that the resulting image has an infinite domain and you may have to do manual conversion.
  *
@@ -1059,6 +1068,15 @@ ComplexImage fft2D(IntImage image);
  * @return IntImage The inverse fourier transform of the input complex image.
  */
 IntImage ifft2D(ComplexImage image);
+
+/**
+ * @brief Performs the inverse Fast Fourier Transform on the provided complex image.
+ * Note that the resulting image has an infinite domain and you may have to do manual conversion.
+ *
+ * @param image The input complex image
+ * @return DoubleImage The inverse fourier transform of the input complex image.
+ */
+DoubleImage ifft2DDouble(ComplexImage image);
 
 /**
  * @brief Swaps quadrants 1 & 3 and 2 & 4 to center the DC component in the image.
@@ -1115,6 +1133,23 @@ DoubleImage allocateDoubleImageGrid(int minX, int maxX, int minY, int maxY, doub
  * with it.
  */
 DoubleImage allocateDoubleImageGridDomain(ImageDomain domain, double minValue, double maxValue);
+
+/**
+ * @brief Allocates an empty image in the domain [0...width) x [0..height) with an infinite dynamic range.
+ *
+ * @param width The width of the image in pixels.
+ * @param height The height of the image in pixels.
+ * @return DoubleImage A newly allocated DoubleImage. Note that you should free the resulting image when you are done with it.
+ */
+DoubleImage allocateDefaultDoubleImage(int width, int height);
+
+/**
+ * @brief Allocates an empty image with the domain and dynamic range of the provided image. Does not copy pixel values.
+ *
+ * @param image The image whose properties to copy.
+ * @return DoubleImage A newly allocated DoubleImage.
+ */
+DoubleImage allocateFromDoubleImage(DoubleImage image);
 
 /**
  * @brief Frees the memory used by the provided image.

@@ -264,6 +264,8 @@ void saveComplexImagePGMAscii(ComplexImage image, const char *path);
 ```C
 ComplexImage fft2D(IntImage image);
 IntImage ifft2D(ComplexImage image);
+ComplexImage fft2DDouble(DoubleImage image);
+DoubleImage ifft2DDouble(ComplexImage image);
 void fft2Dshift(ComplexImage *image);
 void ifft2Dshift(ComplexImage *image);
 ```
@@ -277,6 +279,8 @@ ___
 DoubleImage allocateDoubleImageGrid(int minX, int maxX, int minY, int maxY, double minValue, double maxValue);
 DoubleImage allocateDoubleImageGridDomain(ImageDomain domain, double minValue, double maxValue);
 DoubleImage allocateDoubleImage(int width, int height, double minValue, double maxValue);
+DoubleImage allocateFromDoubleImage(DoubleImage image);
+DoubleImage allocateDefaultDoubleImage(int width, int height);
 DoubleImage copyDoubleImage(DoubleImage image);
 void freeDoubleImage(DoubleImage image);
 ```
