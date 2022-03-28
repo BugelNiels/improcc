@@ -225,6 +225,7 @@ ___
 ComplexImage allocateComplexImageGrid(int minX, int maxX, int minY, int maxY);
 ComplexImage allocateComplexImageGridDomain(ImageDomain domain);
 ComplexImage allocateComplexImage(int width, int height);
+ComplexImage allocateFromComplexImage(ComplexImage image);
 ComplexImage copyComplexImage(ComplexImage image);
 void freeComplexImage(ComplexImage image);
 ```

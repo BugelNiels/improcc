@@ -1,5 +1,6 @@
 #include "improc.h"
 
+#include <float.h>
 #include <limits.h>
 #include <math.h>
 #include <stdarg.h>
@@ -7,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <float.h>
 
 // 1D: Fast Fourier Transform (FFT)
 #define PI 3.1415926535897932384626433832795L
@@ -1841,6 +1841,14 @@ ComplexImage allocateComplexImageGridDomain(ImageDomain domain) {
   return allocateComplexImageGrid(minX, maxX, minY, maxY);
 }
 
+ComplexImage allocateFromComplexImage(ComplexImage image) {
+  ImageDomain domain = getComplexImageDomain(image);
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+  ComplexImage image2 = allocateComplexImageGrid(minX, maxX, minY, maxY);
+  return image2;
+}
+
 void freeComplexImage(ComplexImage image) { free(image.pixels); }
 
 ImageDomain getComplexImageDomain(ComplexImage image) { return image.domain; }
@@ -2208,7 +2216,9 @@ DoubleImage allocateDoubleImageGridDomain(ImageDomain domain, double minValue, d
   return allocateDoubleImageGrid(minX, maxX, minY, maxY, minValue, maxValue);
 }
 
-DoubleImage allocateDefaultDoubleImage(int width, int height) { return allocateDoubleImage(width, height, DBL_MIN, DBL_MAX); }
+DoubleImage allocateDefaultDoubleImage(int width, int height) {
+  return allocateDoubleImage(width, height, -DBL_MAX, DBL_MAX);
+}
 
 DoubleImage allocateFromDoubleImage(DoubleImage image) {
   ImageDomain domain = getDoubleImageDomain(image);

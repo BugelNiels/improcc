@@ -867,6 +867,14 @@ void flipRgbImageVertical(RgbImage *image);
 ComplexImage allocateComplexImage(int width, int height);
 
 /**
+ * @brief Allocates an empty image with the domain and dynamic range of the provided image. Does not copy pixel values.
+ *
+ * @param image The image whose properties to copy.
+ * @return ComplexImage A newly allocated DoubleImage.
+ */
+ComplexImage allocateFromComplexImage(ComplexImage image);
+
+/**
  * @brief Creates a copy of the provided image.
  *
  * @param image The image to copy
@@ -1139,7 +1147,8 @@ DoubleImage allocateDoubleImageGridDomain(ImageDomain domain, double minValue, d
  *
  * @param width The width of the image in pixels.
  * @param height The height of the image in pixels.
- * @return DoubleImage A newly allocated DoubleImage. Note that you should free the resulting image when you are done with it.
+ * @return DoubleImage A newly allocated DoubleImage. Note that you should free the resulting image when you are done
+ * with it.
  */
 DoubleImage allocateDefaultDoubleImage(int width, int height);
 
