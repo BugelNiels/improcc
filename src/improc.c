@@ -13,7 +13,7 @@
 #define PI 3.1415926535897932384626433832795L
 
 typedef int (*binaryOp)(int, int);
-typedef int (*binaryOpComplex)(double complex, double complex);
+typedef double complex (*binaryOpComplex)(double complex, double complex);
 
 // declaration of image viewer
 void glutGreyScaleViewer(uint8_t *values, int width, int height, int originX, int originY, const char *title);
