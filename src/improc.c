@@ -13,6 +13,7 @@
 #define PI 3.1415926535897932384626433832795L
 
 typedef int (*binaryOp)(int, int);
+typedef int (*binaryOpComplex)(double complex, double complex);
 
 // declaration of image viewer
 void glutGreyScaleViewer(uint8_t *values, int width, int height, int originX, int originY, const char *title);
@@ -2195,6 +2196,38 @@ void fft2Dshift(ComplexImage *image) {
 // inverse shift
 void ifft2Dshift(ComplexImage *image) { fft2Dshift(image); }
 
+
+static ComplexImage applyFunctionComplexImage(ComplexImage imageA, ComplexImage imageB, binaryOpComplex operator) {
+  ComplexImage result = allocateFromComplexImage(imageA);
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(getComplexImageDomain(imageA), &minX, &maxX, &minY, &maxY);
+  for (int y = minY; y <= maxY; y++) {
+    for (int x = minX; x <= maxX; x++) {
+      int val = operator(getComplexPixel(imageA, x, y), getComplexPixel(imageB, x, y));
+      setComplexPixel(&result, x, y, val);
+    }
+  }
+  return result;
+}
+
+static int multiplyCompOp(double complex a, double complex b) { return a * b; }
+
+static void compareComplexDomains(ComplexImage imageA, ComplexImage imageB) {
+  int minX1, maxX1, minY1, maxY1;
+  getImageDomainValues(getComplexImageDomain(imageA), &minX1, &maxX1, &minY1, &maxY1);
+  int minX2, maxX2, minY2, maxY2;
+  getImageDomainValues(getComplexImageDomain(imageA), &minX2, &maxX2, &minY2, &maxY2);
+  if (minX1 != minX2 || maxX1 != maxX2 || minY1 != minY2 || maxY1 != maxY2) {
+    fatalError("Images do not have the same domain.");
+  }
+}
+
+ComplexImage multiplyComplexImage(ComplexImage imageA, ComplexImage imageB) {
+  compareComplexDomains(imageA, imageB);
+  return applyFunctionComplexImage(imageA, imageB, &multiplyCompOp);
+}
+
+
 DoubleImage allocateDoubleImage(int width, int height, double minValue, double maxValue) {
   return allocateDoubleImageGrid(0, width - 1, 0, height - 1, minValue, maxValue);
 }
@@ -2228,6 +2261,19 @@ DoubleImage allocateFromDoubleImage(DoubleImage image) {
   getDoubleDynamicRange(image, &minRange, &maxRange);
   DoubleImage image2 = allocateDoubleImageGrid(minX, maxX, minY, maxY, minRange, maxRange);
   return image2;
+}
+
+DoubleImage copyDoubleImage(DoubleImage image) {
+  ImageDomain domain = getDoubleImageDomain(image);
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+  DoubleImage copy = allocateFromDoubleImage(image);
+  for (int y = minY; y <= maxY; y++) {
+    for (int x = minX; x <= maxX; x++) {
+      setDoublePixel(&copy, x, y, getDoublePixel(image, x, y));
+    }
+  }
+  return copy;
 }
 
 void freeDoubleImage(DoubleImage image) { free(image.pixels); }

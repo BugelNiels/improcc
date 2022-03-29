@@ -269,6 +269,7 @@ ComplexImage fft2DDouble(DoubleImage image);
 DoubleImage ifft2DDouble(ComplexImage image);
 void fft2Dshift(ComplexImage *image);
 void ifft2Dshift(ComplexImage *image);
+ComplexImage multiplyComplexImage(ComplexImage imageA, ComplexImage imageB);
 ```
 ___
 

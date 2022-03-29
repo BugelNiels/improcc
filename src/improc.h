@@ -1087,6 +1087,16 @@ IntImage ifft2D(ComplexImage image);
 DoubleImage ifft2DDouble(ComplexImage image);
 
 /**
+ * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) * g(x,y)
+ *
+ * @param imageA First input image
+ * @param imageB Second input image
+ * @return ComplexImage Output image where each pixel is the multiplication of the corresponding pixels in the two input
+ * images
+ */
+ComplexImage multiplyComplexImage(ComplexImage imageA, ComplexImage imageB);
+
+/**
  * @brief Swaps quadrants 1 & 3 and 2 & 4 to center the DC component in the image.
  *
  * @param image The input complex image
