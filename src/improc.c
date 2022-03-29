@@ -2203,14 +2203,14 @@ static ComplexImage applyFunctionComplexImage(ComplexImage imageA, ComplexImage 
   getImageDomainValues(getComplexImageDomain(imageA), &minX, &maxX, &minY, &maxY);
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= maxX; x++) {
-      int val = operator(getComplexPixel(imageA, x, y), getComplexPixel(imageB, x, y));
+      double complex val = operator(getComplexPixel(imageA, x, y), getComplexPixel(imageB, x, y));
       setComplexPixel(&result, x, y, val);
     }
   }
   return result;
 }
 
-static int multiplyCompOp(double complex a, double complex b) { return a * b; }
+static double complex multiplyCompOp(double complex a, double complex b) { return a * b; }
 
 static void compareComplexDomains(ComplexImage imageA, ComplexImage imageB) {
   int minX1, maxX1, minY1, maxY1;
@@ -2511,7 +2511,7 @@ DoubleImage ifft2DDouble(ComplexImage image) {
         width, height);
   }
 
-  DoubleImage im = allocateDoubleImageGridDomain(domain, DBL_MIN, DBL_MAX);
+  DoubleImage im = allocateDoubleImageGridDomain(domain, -DBL_MAX, DBL_MAX);
 
   double complex *wsp = malloc((width < height ? height : width) * sizeof(double complex));  // workspace array
 
