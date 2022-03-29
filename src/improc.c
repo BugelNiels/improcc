@@ -841,7 +841,7 @@ static void saveIntImagePGM(IntImage image, int magicNumber, const char *path) {
     if ((minVal < 0) || (maxVal > 65535)) {
       if (minVal < 0) minVal = 0;
       if (maxVal > 65535) maxVal = 65535;
-      warning("saveIntImagePGM: image %s is clamped to [0,%d].\n", maxVal);
+      warning("saveIntImagePGM: image %s is clamped to [0,%d].\n", path, maxVal);
     }
     unsigned short *buffer = malloc(npixels * sizeof(unsigned short));
     int idx = 0;
