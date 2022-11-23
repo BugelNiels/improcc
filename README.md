@@ -371,18 +371,21 @@ void printHistogram(Histogram histogram);
 
 ___
 
-# Example
+# Example Code Snippets
 
 Below you can find a code snippet containing some example code. This snippet will load an image from the provided path and threshold it at different thresholds. Every stage is displayed and saved.
 
 ```C
-void thresholdDemo(const char *path) {
+void thresholdDemoDomain(const char *path) {
+  // Set up
   IntImage image = loadIntImage(path);
   ImageDomain domain = getIntImageDomain(image);
   displayIntImage(image, "Source Image");
   int minX, maxX, minY, maxY;
   getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   IntImage thresholdedImage = allocateIntImage(getWidth(domain), getHeight(domain), 0, 255);
+
+  // Threshold image with different thresholds
   for (int threshold = 64; threshold < 256; threshold += 64) {
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
@@ -398,8 +401,41 @@ void thresholdDemo(const char *path) {
     displayIntImage(thresholdedImage, filename);  // filename is used as window title
     saveIntImage(thresholdedImage, filename);
   }
+
   // Clean up
   freeIntImage(thresholdedImage);
   freeIntImage(image);
 }
 ```
+
+It is also possible to do the indexing by starting at 0. That would look as follows:
+
+```C
+void thresholdDemoIndexed(const char *path) {
+  IntImage image = loadIntImage(path);
+  ImageDomain domain = getIntImageDomain(image);
+  displayIntImage(image, "Source Image");
+	int width, height;
+	getWidthHeight(domain, &width, &height);
+  IntImage thresholdedImage = allocateIntImage(width, height, 0, 255);
+  for (int threshold = 64; threshold < 256; threshold += 64) {
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        if (getIntPixelI(image, x, y) < threshold) {
+          setIntPixelI(&thresholdedImage, x, y, 0);
+        } else {
+          setIntPixelI(&thresholdedImage, x, y, 255);
+        }
+      }
+    }
+    char filename[20];
+    sprintf(filename, "threshold%d.pbm", threshold);
+    displayIntImage(thresholdedImage, filename);  // filename is used as window title
+    saveIntImage(thresholdedImage, filename);
+  }
+  // Clean up
+  freeIntImage(thresholdedImage);
+  freeIntImage(image);
+}
+```
+Note the usage of the `I` variants of `getPixel` and `setPixel`. However, in this case, this is equivalent to the regular versions, since the domain starts at 0 by default.
