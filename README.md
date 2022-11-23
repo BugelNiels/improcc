@@ -415,8 +415,8 @@ void thresholdDemoIndexed(const char *path) {
   IntImage image = loadIntImage(path);
   ImageDomain domain = getIntImageDomain(image);
   displayIntImage(image, "Source Image");
-	int width, height;
-	getWidthHeight(domain, &width, &height);
+  int width, height;
+  getWidthHeight(domain, &width, &height);
   IntImage thresholdedImage = allocateIntImage(width, height, 0, 255);
   for (int threshold = 64; threshold < 256; threshold += 64) {
     for (int y = 0; y < height; y++) {
