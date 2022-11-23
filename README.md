@@ -7,7 +7,7 @@
   </p>
 </p>
 
-[![GitHub stars](https://badgen.net/github/stars/Naereen/Strapdown.js)](https://github.com/BugelNiels/improc-2022/stargazers) [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://github.com/BugelNiels/improcc/wiki/Documentation)
+[![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://github.com/BugelNiels/improcc/wiki/Documentation)
 
 ## About the project
 
