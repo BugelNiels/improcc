@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: maxverbeek/javadoc-to-markdown@v1.2
+      - uses: maxverbeek/javadoc-to-markdown@v1.3
         with:
           headerfile: src/improc.h
           outdir: documentation
