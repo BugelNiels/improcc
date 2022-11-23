@@ -1,13 +1,23 @@
-# Simple Image Processing Framework for C
+<br />
+<p align="center">
+  <h1 align="center">ImprocC</h1>
 
-A simple image processing framework for C. Supports grayscale `.pgm` images and binary `.pbm` images.
-The aim of this framework is to make it easy to save, load, view and manipulate images. The entire framework is located in the files `improc.h`, `improc.c` and `greyimviewer.c`.
+  <p align="center">
+    A simple image processing framework for C.
+  </p>
+</p>
+
+[![GitHub stars](https://badgen.net/github/stars/Naereen/Strapdown.js)](https://github.com/BugelNiels/improc-2022/stargazers) [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://github.com/BugelNiels/improc-2022/wiki/Documentation-of-the-improc-library)
+
+# About the project
+
+ImprocC is a simple image processing framework for C. The framework supports only the [netpbm](https://en.wikipedia.org/wiki/Netpbm) format. This means it supports grayscale `.pgm` images, binary `.pbm` and rgb `.ppm` images. The aim of this framework is to make it easy to save, load, view and manipulate images. The entire framework is located in the files `improc.h`, `improc.c`, `rgbimviewer.c`, and `greyimviewer.c`.
 
 ## Before you start
 
-To familiarize yourself with the framework, take a look at `improc.h`. This file contains the signatures of all the functions in the framework. You do not need to look at, or modify `improc.c` and `greyimviewer.c`.
+To familiarize yourself with the framework, take a look at `improc.h`. This file contains the signatures of all the functions in the framework. You should not need to look at, or modify `improc.c` and `greyimviewer.c`.
 
-> Important: When using the framework, do not access any of the struct values directly. Only use the provided getter/setter functions.
+> Important: When using the framework, try not to access any of the struct values directly. Only use the provided getter/setter functions.
 
 ## Image Viewer
 
@@ -52,18 +62,20 @@ make
 ```
 
 To compile without the provided image viewer, use the following:
+
 ```sh
 make NOVIEW=1
 ```
 
 If you want to increase the performance of the framework, you can disable the safety checks on the domains and dynamic range by compiling with:
+
 ```sh
 make RELEASE=1
 ```
 
 # Overview
 
-Below is a brief overview of all function signatures available in the framework. The documentation of each of these functions can be found in `improc.h`.
+Below is a brief overview of all function signatures available in the framework. The documentation of each of these functions can be found in `improc.h` and in the wiki.
 
 * [ImageDomain](#image-domains)
 * [IntImage](#int-images)
