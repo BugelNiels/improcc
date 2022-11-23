@@ -462,10 +462,10 @@ Histogram createHistogram(IntImage image);
  * @brief Creates a histogram for the channels red, green and blue from the provided image. Note that this will allocate
  * a lot of memory when the dynamic range is large, since each bin of the histogram is a single pixel value.
  *
- * @param image
- * @param redHist
- * @param greenHist
- * @param blueHist
+ * @param image The image to create the histogram of.
+ * @param redHist Histogram of the red channel.
+ * @param greenHist Histogram of the green channel.
+ * @param blueHist Histogram of the blue channel.
  */
 void createRgbHistograms(RgbImage image, Histogram *redHist, Histogram *greenHist, Histogram *blueHist);
 
