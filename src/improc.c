@@ -456,7 +456,7 @@ static void compareDomains(IntImage imageA, IntImage imageB) {
   int minX1, maxX1, minY1, maxY1;
   getImageDomainValues(getIntImageDomain(imageA), &minX1, &maxX1, &minY1, &maxY1);
   int minX2, maxX2, minY2, maxY2;
-  getImageDomainValues(getIntImageDomain(imageA), &minX2, &maxX2, &minY2, &maxY2);
+  getImageDomainValues(getIntImageDomain(imageB), &minX2, &maxX2, &minY2, &maxY2);
   if (minX1 != minX2 || maxX1 != maxX2 || minY1 != minY2 || maxY1 != maxY2) {
     fatalError("Images do not have the same domain.");
   }
@@ -1505,7 +1505,7 @@ static void compareRgbDomains(RgbImage imageA, RgbImage imageB) {
   int minX1, maxX1, minY1, maxY1;
   getImageDomainValues(getRgbImageDomain(imageA), &minX1, &maxX1, &minY1, &maxY1);
   int minX2, maxX2, minY2, maxY2;
-  getImageDomainValues(getRgbImageDomain(imageA), &minX2, &maxX2, &minY2, &maxY2);
+  getImageDomainValues(getRgbImageDomain(imageB), &minX2, &maxX2, &minY2, &maxY2);
   if (minX1 != minX2 || maxX1 != maxX2 || minY1 != minY2 || maxY1 != maxY2) {
     fatalError("Images do not have the same domain.");
   }
@@ -2216,7 +2216,7 @@ static void compareComplexDomains(ComplexImage imageA, ComplexImage imageB) {
   int minX1, maxX1, minY1, maxY1;
   getImageDomainValues(getComplexImageDomain(imageA), &minX1, &maxX1, &minY1, &maxY1);
   int minX2, maxX2, minY2, maxY2;
-  getImageDomainValues(getComplexImageDomain(imageA), &minX2, &maxX2, &minY2, &maxY2);
+  getImageDomainValues(getComplexImageDomain(imageB), &minX2, &maxX2, &minY2, &maxY2);
   if (minX1 != minX2 || maxX1 != maxX2 || minY1 != minY2 || maxY1 != maxY2) {
     fatalError("Images do not have the same domain.");
   }
