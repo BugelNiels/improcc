@@ -3,19 +3,23 @@
   <h1 align="center">ImprocC</h1>
 
   <p align="center">
-    A simple image processing framework for C.
+    A simple image-processing framework for C.
   </p>
 </p>
 
-[![GitHub stars](https://badgen.net/github/stars/Naereen/Strapdown.js)](https://github.com/BugelNiels/improc-2022/stargazers) [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://github.com/BugelNiels/improc-2022/wiki/Documentation-of-the-improc-library)
+[![GitHub stars](https://badgen.net/github/stars/Naereen/Strapdown.js)](https://github.com/BugelNiels/improc-2022/stargazers) [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://github.com/BugelNiels/improcc/wiki/Documentation)
 
-# About the project
+## About the project
 
-ImprocC is a simple image processing framework for C. The framework supports only the [netpbm](https://en.wikipedia.org/wiki/Netpbm) format. This means it supports grayscale `.pgm` images, binary `.pbm` and rgb `.ppm` images. The aim of this framework is to make it easy to save, load, view and manipulate images. The entire framework is located in the files `improc.h`, `improc.c`, `rgbimviewer.c`, and `greyimviewer.c`.
+ImprocC is a simple image-processing framework for C. The framework supports only the [netpbm](https://en.wikipedia.org/wiki/Netpbm) format. This means it supports grayscale `.pgm` images, binary `.pbm` and rgb `.ppm` images. The aim of this framework is to make it easy to save, load, view and manipulate images. The entire framework is located in the files `improc.h`, `improc.c`, `greyimviewer`, and `rgbimviewer.c`.
+
+## Documentation
+
+The documentation of the functions of these functions can be found in [`improc.h`](https://github.com/BugelNiels/improcc/blob/main/src/improc.h) and in the [wiki](https://github.com/BugelNiels/improcc/wiki/Documentation).
 
 ## Before you start
 
-To familiarize yourself with the framework, take a look at `improc.h`. This file contains the signatures of all the functions in the framework. You should not need to look at, or modify `improc.c` and `greyimviewer.c`.
+To familiarize yourself with the framework, take a look at `improc.h`. This file contains the signatures of all the functions in the framework. You should not need to look at, or modify `improc.c`, `greyimviewer.c` and `rgbimviewer.c`.
 
 > Important: When using the framework, try not to access any of the struct values directly. Only use the provided getter/setter functions.
 
@@ -75,7 +79,9 @@ make RELEASE=1
 
 # Overview
 
-Below is a brief overview of all function signatures available in the framework. The documentation of each of these functions can be found in `improc.h` and in the wiki.
+Below is a brief overview of all function signatures available in the framework. This image-processing framework is different from most others in the sense that it works with image domains. The indexing of images does not necessarily need to start at `0` and end at `size`, but you can specify custom ranges. For example, you can specify an image that you can index in the range of `[-1, 1]` instead of the default `[0, size)`. This is extremely useful for, among other things, convolution kernels.
+
+ By default, the `getPixel` functions will index based on the domain. This means that the index `0` is not guaranteed to be the first pixel. However, sometimes it is useful to be able to have this constraint, regardless of the domain. As such, there are also the `getPixelI` variants which allow you to index from `0`, regardless of the specified domain. More details about this can be found in the documentation.
 
 * [ImageDomain](#image-domains)
 * [IntImage](#int-images)
@@ -364,3 +370,36 @@ void printHistogram(Histogram histogram);
 ```
 
 ___
+
+# Example
+
+Below you can find a code snippet containing some example code. This snippet will load an image from the provided path and threshold it at different thresholds. Every stage is displayed and saved.
+
+```C
+void thresholdDemo(const char *path) {
+  IntImage image = loadIntImage(path);
+  ImageDomain domain = getIntImageDomain(image);
+  displayIntImage(image, "Source Image");
+  int minX, maxX, minY, maxY;
+  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+  IntImage thresholdedImage = allocateIntImage(getWidth(domain), getHeight(domain), 0, 255);
+  for (int threshold = 64; threshold < 256; threshold += 64) {
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (getIntPixel(image, x, y) < threshold) {
+          setIntPixel(&thresholdedImage, x, y, 0);
+        } else {
+          setIntPixel(&thresholdedImage, x, y, 255);
+        }
+      }
+    }
+    char filename[20];
+    sprintf(filename, "threshold%d.pbm", threshold);
+    displayIntImage(thresholdedImage, filename);  // filename is used as window title
+    saveIntImage(thresholdedImage, filename);
+  }
+  // Clean up
+  freeIntImage(thresholdedImage);
+  freeIntImage(image);
+}
+```
