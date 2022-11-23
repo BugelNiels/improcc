@@ -6,10 +6,11 @@ MAIN= improc
 CC= gcc
 
 # define any compile-time flags
-# For debugging purposes you can add the -g flag here
-# Additionally, if you want to increase the performance of the framework, add the "-DFAST" flag here.
-# Note that this disables domain and dynamic range checks!
 CFLAGS= -Wall -pedantic
+
+ifdef NOVIEW
+	CFLAGS += -DNOVIEW=1
+endif
 
 # Make with "make RELEASE=1" for release build
 ifndef RELEASE
@@ -19,14 +20,18 @@ else
 endif
 
 # define any libraries to link into executable
-LIBS= -lm -lglut -lX11
+LIBS= -lm
 
-OS := $(shell uname)
-ifeq ($(OS),Darwin)
-	LIBS += -framework OpenGL
-else
-	LIBS += -lGL  -lGLU
-  # check for Linux and run other commands
+ifndef NOVIEW
+  LIBS += -lglut -lX11
+
+	OS := $(shell uname)
+	ifeq ($(OS),Darwin)
+		LIBS += -framework OpenGL
+	else
+		LIBS += -lGL  -lGLU
+		# check for Linux and run other commands
+	endif
 endif
 
 # define C source files
@@ -34,6 +39,17 @@ SRCS= ${wildcard src/*.c} ${wildcard src/**/*.c}
 
 # define C header files
 HDRS= ${wildcard src/*.h} ${wildcard src/**/*.h}
+
+ifdef NOVIEW
+	TMPSRC := $(SRCS)
+	SRCS = $(filter-out src/greyimviewer.c,$(TMPSRC))
+	TMPSRC := $(SRCS)
+	SRCS = $(filter-out  src/rgbimviewer.c,$(TMPSRC))
+	TMPSRC := $(SRCS)
+	SRCS = $(filter-out src/greyimviewer.h,$(TMPSRC))
+	TMPSRC := $(SRCS)
+	SRCS = $(filter-out  src/rgbimviewer.h,$(TMPSRC))
+endif
 
 # --- TARGETS
 all: ${MAIN}

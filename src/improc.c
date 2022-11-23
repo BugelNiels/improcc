@@ -15,9 +15,11 @@
 typedef int (*binaryOp)(int, int);
 typedef double complex (*binaryOpComplex)(double complex, double complex);
 
+#ifndef NOVIEW
 // declaration of image viewer
 void glutGreyScaleViewer(uint8_t *values, int width, int height, int originX, int originY, const char *title);
 void glutRgbViewer(uint8_t *rValues, uint8_t *gValues, uint8_t *bValues, int width, int height, const char *title);
+#endif
 
 /** Util ****************************************************/
 
@@ -380,6 +382,7 @@ void printIntLatexTableToFile(FILE *out, IntImage image) {
 
 void printIntImageLatexTable(IntImage image) { printIntLatexTableToFile(stdout, image); }
 
+#ifndef NOVIEW
 static uint8_t *intImageToByteBuffer(IntImage image) {
   ImageDomain domain = getIntImageDomain(image);
   int minX, maxX, minY, maxY, width = getWidth(domain), height = getHeight(domain);
@@ -428,6 +431,7 @@ void displayIntImage(IntImage image, const char *windowTitle) {
   }
   glutGreyScaleViewer(buffer, width, height, -minX, -minY, windowTitle);
 }
+#endif
 
 static IntImage applyFunctionIntImage(IntImage imageA, IntImage imageB, binaryOp operator) {
   IntImage result = allocateFromIntImage(imageA);
@@ -1237,6 +1241,7 @@ void printRgbLatexTableToFile(FILE *out, RgbImage image) {
   fprintf(out, "\\end{tabular}\n");
 }
 
+#ifndef NOVIEW
 void displayRgbImage(RgbImage image, const char *windowTitle) {
   uint8_t *rBuf, *gBuf, *bBuf;
   rgbImageToByteBuffers(image, &rBuf, &gBuf, &bBuf);
@@ -1245,6 +1250,7 @@ void displayRgbImage(RgbImage image, const char *windowTitle) {
   getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   glutRgbViewer(rBuf, gBuf, bBuf, width, height, windowTitle);
 }
+#endif
 
 /* ----------------------------- Image Loading + Saving ----------------------------- */
 
@@ -1969,6 +1975,7 @@ void printComplexLatexTableToFile(FILE *out, ComplexImage image) {
   fprintf(out, "\\end{tabular}\n");
 }
 
+#ifndef NOVIEW
 static uint8_t *complexImageToByteBuffer(ComplexImage image) {
   ImageDomain domain = getComplexImageDomain(image);
   int minX, maxX, minY, maxY, width = getWidth(domain), height = getHeight(domain);
@@ -1998,6 +2005,7 @@ void displayComplexImage(ComplexImage image, const char *windowTitle) {
   getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   glutGreyScaleViewer(buffer, width, height, -minX, -minY, windowTitle);
 }
+#endif
 
 static IntImage complexRealValsToIntImage(ComplexImage image) {
   double min, max;

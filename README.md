@@ -5,7 +5,7 @@ The aim of this framework is to make it easy to save, load, view and manipulate 
 
 ## Before you start
 
-To familiarize yourself with the framework, take a look at `improc.h`. This file contains the signatures of all the functions in the framework. You do not need to look at, or modify `improc.c` and `greyimviewer.c`. You will find a simple threshold demo in `main.c`, which demonstrates a basic usage of the framework.
+To familiarize yourself with the framework, take a look at `improc.h`. This file contains the signatures of all the functions in the framework. You do not need to look at, or modify `improc.c` and `greyimviewer.c`.
 
 > Important: When using the framework, do not access any of the struct values directly. Only use the provided getter/setter functions.
 
@@ -49,6 +49,16 @@ To compile and run the program, do the following:
 ```sh
 make
 ./improc <file name>
+```
+
+To compile without the provided image viewer, use the following:
+```sh
+make NOVIEW=1
+```
+
+If you want to increase the performance of the framework, you can disable the safety checks on the domains and dynamic range by compiling with:
+```sh
+make RELEASE=1
 ```
 
 # Overview

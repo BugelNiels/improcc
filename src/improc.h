@@ -269,6 +269,7 @@ void printIntImageLatexTable(IntImage image);
  */
 void printIntLatexTableToFile(FILE *out, IntImage image);
 
+#ifndef NOVIEW
 /**
  * @brief Opens a window that allows the user to view the image. Note that this uses OpenGL which in turn allocates
  * memory that cannot be freed. If you want to check for memory leaks, make sure that you do not run any image displays.
@@ -277,6 +278,7 @@ void printIntLatexTableToFile(FILE *out, IntImage image);
  * @param windowTitle The title of the window.
  */
 void displayIntImage(IntImage image, const char *windowTitle);
+#endif
 
 /* ----------------------------- Image Loading + Saving ----------------------------- */
 
@@ -702,6 +704,9 @@ void printRgbImageLatexTable(RgbImage image);
  * @param image The image to print the LaTeX table of.
  */
 void printRgbLatexTableToFile(FILE *out, RgbImage image);
+
+
+#ifndef NOVIEW
 /**
  * @brief Opens a window that allows the user to view the image. Note that this uses OpenGL which in turn allocates
  * memory that cannot be freed. If you want to check for memory leaks, make sure that you do not run any image displays.
@@ -710,6 +715,7 @@ void printRgbLatexTableToFile(FILE *out, RgbImage image);
  * @param windowTitle The title of the window.
  */
 void displayRgbImage(RgbImage image, const char *windowTitle);
+#endif
 
 /* ----------------------------- Image Loading + Saving ----------------------------- */
 
@@ -1009,6 +1015,7 @@ void printComplexImageLatexTable(ComplexImage image);
  */
 void printComplexLatexTableToFile(FILE *out, ComplexImage image);
 
+#ifndef NOVIEW
 /**
  * @brief Opens a window that allows the user to view the image. Note that this uses OpenGL which in turn allocates
  * memory that cannot be freed. If you want to check for memory leaks, make sure that you do not run any image displays.
@@ -1018,6 +1025,7 @@ void printComplexLatexTableToFile(FILE *out, ComplexImage image);
  * @param windowTitle The title of the window.
  */
 void displayComplexImage(ComplexImage image, const char *windowTitle);
+#endif
 
 /* ----------------------------- Image Saving ----------------------------- */
 
