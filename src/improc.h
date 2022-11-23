@@ -95,8 +95,8 @@ IntImage allocateFromIntImage(IntImage image);
 /**
  * @brief Creates a copy of the provided image.
  *
- * @param image The image to copy
- * @return IntImage A copy of the provided image
+ * @param image The image to copy.
+ * @return IntImage A copy of the provided image.
  */
 IntImage copyIntImage(IntImage image);
 
@@ -111,13 +111,12 @@ IntImage copyIntImage(IntImage image);
  * @param maxValue The maximum possible value this image should be able to contain.
  * @return IntImage A newly allocated IntImage. Note that you should free the resulting image when you are done with it.
  */
-
 IntImage allocateIntImageGrid(int minX, int maxX, int minY, int maxY, int minValue, int maxValue);
 
 /**
  * @brief Allocates an empty image in the domain [minX...maxX] x [minY..maxY] with the specified parameters.
  *
- * @param domain Domain the image should have
+ * @param domain Domain the image should have.
  * @param minValue The minimum possible value this image should be able to contain.
  * @param maxValue The maximum possible value this image should be able to contain.
  * @return IntImage A newly allocated IntImage. Note that you should free the resulting image when you are done with it.
@@ -153,7 +152,7 @@ void getWidthHeight(ImageDomain domain, int *width, int *height);
 /**
  * @brief Quality of life function. Puts the properties of the image domain into the provided arguments.
  *
- * @param domain The domain of the image
+ * @param domain The domain of the image.
  * @param minX The start of the image domain in the x direction.
  * @param maxX The end of the image domain in the x direction.
  * @param minY The start of the image domain in the y direction.
@@ -239,7 +238,7 @@ void setAllIntPixels(IntImage *image, int greyValue);
 /**
  * @brief Updates the dynamic range of the image
  *
- * @param image The image to update the dynamic range of
+ * @param image The image to update the dynamic range of.
  * @param newMinRange The new minimum possible value this image should be able to contain.
  * @param newMaxRange The new maximum possible value this image should be able to contain.
  */
@@ -339,7 +338,7 @@ void saveIntImagePBMAscii(IntImage image, const char *path);
 
 /**
  * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = max(f(x,y),
- * g(x,y))
+ * g(x,y)).
  *
  * @param imageA First input image
  * @param imageB Second input image
@@ -349,37 +348,37 @@ IntImage maxIntImage(IntImage imageA, IntImage imageB);
 
 /**
  * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = min(f(x,y),
- * g(x,y))
+ * g(x,y)).
  *
- * @param imageA First input image
- * @param imageB Second input image
+ * @param imageA First input image.
+ * @param imageB Second input image.
  * @return IntImage Output image where each pixel is the minimum of the corresponding pixels in the two input images
  */
 IntImage minIntImage(IntImage imageA, IntImage imageB);
 
 /**
- * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) + g(x,y)
+ * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) + g(x,y).
  *
- * @param imageA First input image
- * @param imageB Second input image
+ * @param imageA First input image.
+ * @param imageB Second input image.
  * @return IntImage Output image where each pixel is the sum of the corresponding pixels in the two input images
  */
 IntImage addIntImage(IntImage imageA, IntImage imageB);
 
 /**
- * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) - g(x,y)
+ * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) - g(x,y).
  *
- * @param imageA First input image
- * @param imageB Second input image
+ * @param imageA First input image.
+ * @param imageB Second input image.
  * @return IntImage Output image where each pixel is the subtraction of the corresponding pixels in the two input images
  */
 IntImage subtractIntImage(IntImage imageA, IntImage imageB);
 
 /**
- * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) * g(x,y)
+ * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) * g(x,y).
  *
- * @param imageA First input image
- * @param imageB Second input image
+ * @param imageA First input image.
+ * @param imageB Second input image.
  * @return IntImage Output image where each pixel is the multiplication of the corresponding pixels in the two input
  * images
  */
@@ -389,10 +388,10 @@ IntImage multiplyIntImage(IntImage imageA, IntImage imageB);
  * @brief Produces an output image that is the result of applying a lookup table (LUT) to the input image. The LUT
  * should have the same size as the dynamic range of the input image.
  *
- * @param image Input image
+ * @param image Input image.
  * @param LUT The lookup table. Maps a gray value in [minRange..maxRange] of the image to a new gray value.
  * @param LUTSize The size of the lookup table.
- * @return IntImage Image produced from applying the LUT to the input iamge
+ * @return IntImage Image produced from applying the LUT to the input iamge.
  */
 IntImage applyLutIntImage(IntImage image, int *LUT, int LUTsize);
 
@@ -472,7 +471,7 @@ Histogram createHistogram(IntImage image);
 void createRgbHistograms(RgbImage image, Histogram *redHist, Histogram *greenHist, Histogram *blueHist);
 
 /**
- * @brief Creates an empty histogram
+ * @brief Creates an empty histogram.
  *
  * @param minRange Minimum possible pixel value in the histogram.
  * @param maxRange Maximum possible pixel value in the histogram.
@@ -686,7 +685,7 @@ void setAllRgbPixels(RgbImage *image, int r, int g, int b);
 
 /**
  * @brief Prints all the pixel values in the provided image to stdout. Every row is put on a new line.
- * Each rgb value is printed as (r,g,b)
+ * Each rgb value is printed as (r,g,b).
  *
  * @param image The image to print.
  */
@@ -711,7 +710,7 @@ void printRgbLatexTableToFile(FILE *out, RgbImage image);
  * @brief Opens a window that allows the user to view the image. Note that this uses OpenGL which in turn allocates
  * memory that cannot be freed. If you want to check for memory leaks, make sure that you do not run any image displays.
  *
- * @param image The image to view
+ * @param image The image to view.
  * @param windowTitle The title of the window.
  */
 void displayRgbImage(RgbImage image, const char *windowTitle);
@@ -760,9 +759,9 @@ void saveRgbImagePPMAscii(RgbImage image, const char *path);
  * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = max(f(x,y),
  * g(x,y)). Performs the operation seperately for each channel.
  *
- * @param imageA First input image
- * @param imageB Second input image
- * @return RgbImage Output image where each pixel is the maximum of the corresponding pixels in the two input images
+ * @param imageA First input image.
+ * @param imageB Second input image.
+ * @return RgbImage Output image where each pixel is the maximum of the corresponding pixels in the two input images.
  */
 RgbImage maxRgbImage(RgbImage imageA, RgbImage imageB);
 
@@ -770,9 +769,9 @@ RgbImage maxRgbImage(RgbImage imageA, RgbImage imageB);
  * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = min(f(x,y),
  * g(x,y)). Performs the operation seperately for each channel.
  *
- * @param imageA First input image
- * @param imageB Second input image
- * @return IntImage Output image where each pixel is the minimum of the corresponding pixels in the two input images
+ * @param imageA First input image.
+ * @param imageB Second input image.
+ * @return IntImage Output image where each pixel is the minimum of the corresponding pixels in the two input images.
  */
 RgbImage minRgbImage(RgbImage imageA, RgbImage imageB);
 
@@ -780,9 +779,9 @@ RgbImage minRgbImage(RgbImage imageA, RgbImage imageB);
  * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) + g(x,y).
  * Performs the operation seperately for each channel.
  *
- * @param imageA First input image
- * @param imageB Second input image
- * @return IntImage Output image where each pixel is the sum of the corresponding pixels in the two input images
+ * @param imageA First input image.
+ * @param imageB Second input image.
+ * @return IntImage Output image where each pixel is the sum of the corresponding pixels in the two input images.
  */
 RgbImage addRgbImage(RgbImage imageA, RgbImage imageB);
 
@@ -790,9 +789,9 @@ RgbImage addRgbImage(RgbImage imageA, RgbImage imageB);
  * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) - g(x,y).
  * Performs the operation seperately for each channel.
  *
- * @param imageA First input image
- * @param imageB Second input image
- * @return IntImage Output image where each pixel is the subtraction of the corresponding pixels in the two input images
+ * @param imageA First input image.
+ * @param imageB Second input image.
+ * @return IntImage Output image where each pixel is the subtraction of the corresponding pixels in the two input images.
  */
 RgbImage subtractRgbImage(RgbImage imageA, RgbImage imageB);
 
@@ -800,9 +799,9 @@ RgbImage subtractRgbImage(RgbImage imageA, RgbImage imageB);
  * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) * g(x,y).
  * Performs the operation seperately for each channel.
  *
- * @param imageA First input image
- * @param imageB Second input image
- * @return IntImage Output image where each pixel is the multiplication of the corresponding pixels in the two input
+ * @param imageA First input image.
+ * @param imageB Second input image.
+ * @return IntImage Output image where each pixel is the multiplication of the corresponding pixels in the two input.
  * images
  */
 RgbImage multiplyRgbImage(RgbImage imageA, RgbImage imageB);
@@ -811,7 +810,7 @@ RgbImage multiplyRgbImage(RgbImage imageA, RgbImage imageB);
  * @brief Produces an output image that is the result of applying a lookup table (LUT) to the input image. The LUT
  * should have the same size as the dynamic range of the input image. Should have a value for each channel.
  *
- * @param image Input image
+ * @param image Input image.
  * @param LUT The lookup table. Maps a gray value in [minRange..maxRange] of the image to a new gray value.
  * @param LUTSize The size of the lookup table.
  * @return IntImage Image produced from applying the LUT to the input iamge
@@ -883,7 +882,7 @@ ComplexImage allocateFromComplexImage(ComplexImage image);
 /**
  * @brief Creates a copy of the provided image.
  *
- * @param image The image to copy
+ * @param image The image to copy.
  * @return ComplexImage A copy of the provided image
  */
 ComplexImage copyComplexImage(ComplexImage image);
@@ -904,7 +903,7 @@ ComplexImage allocateComplexImageGrid(int minX, int maxX, int minY, int maxY);
 /**
  * @brief Allocates an empty complex image in the domain [minX...maxX] x [minY..maxY] with the specified parameters.
  *
- * @param domain Domain the image should have
+ * @param domain Domain the image should have.
  * @return ComplexImage A newly allocated ComplexImage. Note that you should free the resulting image when you are done
  * with it.
  */
@@ -1021,7 +1020,7 @@ void printComplexLatexTableToFile(FILE *out, ComplexImage image);
  * memory that cannot be freed. If you want to check for memory leaks, make sure that you do not run any image displays.
  * Only the real values of the complex image are displayed.
  *
- * @param image The image to view
+ * @param image The image to view.
  * @param windowTitle The title of the window.
  */
 void displayComplexImage(ComplexImage image, const char *windowTitle);
@@ -1062,7 +1061,7 @@ void saveComplexImagePGMAscii(ComplexImage image, const char *path);
  * @brief Performs the Fast Fourier Transform on the provided input image. Note that the image dimensions must be a
  * power of 2.
  *
- * @param image The input image
+ * @param image The input image.
  * @return ComplexImage The fourier transform of the input image.
  */
 ComplexImage fft2D(IntImage image);
@@ -1071,7 +1070,7 @@ ComplexImage fft2D(IntImage image);
  * @brief Performs the Fast Fourier Transform on the provided input image. Note that the image dimensions must be a
  * power of 2.
  *
- * @param image The input image
+ * @param image The input image.
  * @return ComplexImage The fourier transform of the input image.
  */
 ComplexImage fft2DDouble(DoubleImage image);
@@ -1080,7 +1079,7 @@ ComplexImage fft2DDouble(DoubleImage image);
  * @brief Performs the inverse Fast Fourier Transform on the provided complex image.
  * Note that the resulting image has an infinite domain and you may have to do manual conversion.
  *
- * @param image The input complex image
+ * @param image The input complex image.
  * @return IntImage The inverse fourier transform of the input complex image.
  */
 IntImage ifft2D(ComplexImage image);
@@ -1089,32 +1088,32 @@ IntImage ifft2D(ComplexImage image);
  * @brief Performs the inverse Fast Fourier Transform on the provided complex image.
  * Note that the resulting image has an infinite domain and you may have to do manual conversion.
  *
- * @param image The input complex image
+ * @param image The input complex image.
  * @return DoubleImage The inverse fourier transform of the input complex image.
  */
 DoubleImage ifft2DDouble(ComplexImage image);
 
 /**
- * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) * g(x,y)
+ * @brief Creates a new image h from two input images f and g where each pixel is defined as h(x,y) = f(x,y) * g(x,y).
  *
- * @param imageA First input image
- * @param imageB Second input image
+ * @param imageA First input image.
+ * @param imageB Second input image.
  * @return ComplexImage Output image where each pixel is the multiplication of the corresponding pixels in the two input
- * images
+ * images.
  */
 ComplexImage multiplyComplexImage(ComplexImage imageA, ComplexImage imageB);
 
 /**
  * @brief Swaps quadrants 1 & 3 and 2 & 4 to center the DC component in the image.
  *
- * @param image The input complex image
+ * @param image The input complex image.
  */
 void fft2Dshift(ComplexImage *image);
 
 /**
  * @brief Reverses the centering of the DC component.
  *
- * @param image The input complex image
+ * @param image The input complex image.
  */
 void ifft2Dshift(ComplexImage *image);
 
@@ -1133,8 +1132,8 @@ DoubleImage allocateDoubleImage(int width, int height, double minValue, double m
 /**
  * @brief Creates a copy of the provided image.
  *
- * @param image The image to copy
- * @return DoubleImage A copy of the provided image
+ * @param image The image to copy.
+ * @return DoubleImage A copy of the provided image.
  */
 DoubleImage copyDoubleImage(DoubleImage image);
 
@@ -1154,7 +1153,7 @@ DoubleImage allocateDoubleImageGrid(int minX, int maxX, int minY, int maxY, doub
 /**
  * @brief Allocates an empty double image in the domain [minX...maxX] x [minY..maxY] with the specified parameters.
  *
- * @param domain Domain the image should have
+ * @param domain Domain the image should have.
  * @return DoubleImage A newly allocated DoubleImage. Note that you should free the resulting image when you are done
  * with it.
  */
