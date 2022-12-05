@@ -577,7 +577,6 @@ RgbImage copyRgbImage(RgbImage image);
  * @param maxValue The maximum possible value this image should be able to contain.
  * @return RgbImage A newly allocated RgbImage. Note that you should free the resulting image when you are done with it.
  */
-
 RgbImage allocateRgbImageGrid(int minX, int maxX, int minY, int maxY, int minValue, int maxValue);
 
 /**
@@ -589,6 +588,7 @@ RgbImage allocateRgbImageGrid(int minX, int maxX, int minY, int maxY, int minVal
  * @return RgbImage A newly allocated RgbImage. Note that you should free the resulting image when you are done with it.
  */
 RgbImage allocateRgbImageGridDomain(ImageDomain domain, int minValue, int maxValue);
+
 /**
  * @brief Frees the memory used by the provided image.
  *
@@ -690,12 +690,14 @@ void setAllRgbPixels(RgbImage *image, int r, int g, int b);
  * @param image The image to print.
  */
 void printRgbBuffer(RgbImage image);
+
 /**
  * @brief Prints a LaTeX compatible table representation of the provided image to stdout.
  *
  * @param image The image to print the LaTeX table of.
  */
 void printRgbImageLatexTable(RgbImage image);
+
 /**
  * @brief Prints a LaTeX compatible table representation of the provided image to the provided file stream.
  *
@@ -703,7 +705,6 @@ void printRgbImageLatexTable(RgbImage image);
  * @param image The image to print the LaTeX table of.
  */
 void printRgbLatexTableToFile(FILE *out, RgbImage image);
-
 
 #ifndef NOVIEW
 /**
@@ -897,7 +898,6 @@ ComplexImage copyComplexImage(ComplexImage image);
  * @return ComplexImage A newly allocated ComplexImage. Note that you should free the resulting image when you are done
  * with it.
  */
-
 ComplexImage allocateComplexImageGrid(int minX, int maxX, int minY, int maxY);
 
 /**
@@ -1147,7 +1147,6 @@ DoubleImage copyDoubleImage(DoubleImage image);
  * @return DoubleImage A newly allocated DoubleImage. Note that you should free the resulting image when you are done
  * with it.
  */
-
 DoubleImage allocateDoubleImageGrid(int minX, int maxX, int minY, int maxY, double minValue, double maxValue);
 
 /**
