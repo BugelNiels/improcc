@@ -844,9 +844,12 @@ static void saveIntImagePGM(IntImage image, int magicNumber, const char *path) {
 
   if (strcmp(extension, "pgm") == 0) {
     if ((minVal < 0) || (maxVal > 65535)) {
+      int originalMinVal = minVal;
+      int originalMaxVal = maxVal;
       if (minVal < 0) minVal = 0;
       if (maxVal > 65535) maxVal = 65535;
-      warning("saveIntImagePGM: image %s is clamped to [0,%d].\n", path, maxVal);
+      warning("saveIntImagePGM: range of image %s is [%d,%d]. Saved image values are clamped to [%d,%d]. \n",
+            path, originalMinVal, originalMaxVal, minVal, maxVal);
     }
     unsigned short *buffer = malloc(npixels * sizeof(unsigned short));
     int idx = 0;
@@ -876,9 +879,12 @@ static void saveIntImagePBM(IntImage image, int magicNumber, const char *path) {
   getMinMax(image, &minVal, &maxVal);
 
   if ((minVal < 0) || (maxVal > 1)) {
+    int originalMinVal = minVal;
+    int originalMaxVal = maxVal;
     if (minVal < 0) minVal = 0;
     if (maxVal > 1) maxVal = 1;
-    warning("saveIntImagePBM: image %s is clamped to [0,%d].\n", path, maxVal);
+    warning("saveIntImagePBM: range of image %s is [%d,%d]. Saved image values are clamped to [%d,%d]. \n",
+            path, originalMinVal, originalMaxVal, minVal, maxVal);
   }
   uint8_t *buffer = malloc(npixels * sizeof(uint8_t));
 
@@ -1446,9 +1452,12 @@ static void saveRgbImagePPM(RgbImage image, int magicNumber, const char *path) {
 
   if (strcmp(extension, "ppm") == 0) {
     if ((minVal < 0) || (maxVal > 65535)) {
+      int originalMinVal = minVal;
+       int originalMaxVal = maxVal;
       if (minVal < 0) minVal = 0;
       if (maxVal > 65535) maxVal = 65535;
-      warning("saveRgbImagePPM: image %s is clamped to [0,%d].\n", maxVal);
+      warning("saveIntImagePPM: range of image %s is [%d,%d]. Saved image values are clamped to [%d,%d]. \n",
+            path, originalMinVal, originalMaxVal, minVal, maxVal);
     }
     unsigned short *buffer = malloc(3 * npixels * sizeof(unsigned short));
     int idx = 0;
