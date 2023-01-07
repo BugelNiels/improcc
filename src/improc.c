@@ -24,11 +24,13 @@ void glutRgbViewer(uint8_t *rValues, uint8_t *gValues, uint8_t *bValues, int wid
 /** Util ****************************************************/
 
 static void warning(const char *format, ...) {
+#ifndef DISABLE_WARNINGS
   fprintf(stderr, "Warning: ");
   va_list args;
   va_start(args, format);
   vfprintf(stderr, format, args);
   va_end(args);
+#endif
 }
 
 static void fatalError(const char *format, ...) {
@@ -155,6 +157,12 @@ int isInDomain(ImageDomain domain, int x, int y) {
   int minX, maxX, minY, maxY;
   getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   return !((x < minX) || (x > maxX) || (y < minY) || (y > maxY));
+}
+
+int isInDomainI(ImageDomain domain, int x, int y) {
+  int width, height;
+  getWidthHeight(domain, &width, &height);
+  return (x >= 0) && (x < width) && (y >= 0) && (y < height);
 }
 
 static void flipDomainHorizontal(ImageDomain *domain) {
@@ -429,6 +437,15 @@ void displayIntImage(IntImage image, const char *windowTitle) {
   if ((min < 0) || (max > 255)) {
     warning("displayIntImage: grey values are clamped in the image viewer to [0,255].\n");
   }
+  int minRange, maxRange;
+  getDynamicRange(image, &minRange, &maxRange);
+  // Scale grey values accordingly when the dynamic range is smaller than 0-255
+  if (minRange == 0 && maxRange > 0) {
+    double scaleFactor = 255.0 / maxRange;
+    for (int i = 0; i < width * height; i++) {
+      buffer[i] = (int)(buffer[i] * scaleFactor + 0.5);
+    }
+  }
   glutGreyScaleViewer(buffer, width, height, -minX, -minY, windowTitle);
 }
 #endif
@@ -493,10 +510,10 @@ IntImage multiplyIntImage(IntImage imageA, IntImage imageB) {
 
 IntImage applyLutIntImage(IntImage image, int *LUT, int LUTSize) {
   if (image.minRange < 0) {
-    fatalError("applyLutIntImage: LUTs can only be applied to image with positive ");
+    fatalError("applyLutIntImage: LUTs can only be applied to image with positive dynamic range.\n ");
   }
   if (image.maxRange > LUTSize) {
-    fatalError("applyLutIntImage: LUT must be the same size as the dynamic range of the image");
+    fatalError("applyLutIntImage: LUT must be the same size as the dynamic range of the image.\n");
   }
 
   IntImage resultImg = allocateFromIntImage(image);
@@ -582,7 +599,7 @@ static unsigned short *loadImagePGM(const char *path, int *width, int *height, i
 
   if ((magicNumber != 2) && (magicNumber != 5)) {
     fclose(imgFile);
-    fatalError("Illegal magic number P%d found. Only P2 and P5 are valid PGM files.\n", magicNumber);
+    fatalError("loadImagePGM: illegal magic number P%d found. Only P2 and P5 are valid PGM files.\n", magicNumber);
   }
   // skip comment lines
   char c;
@@ -718,10 +735,11 @@ IntImage loadIntImage(const char *path) {
 
   if (strcmp("pgm", extension) == 0) {
     buf = loadImagePGM(path, &width, &height, &maxVal);
-  }
-  if (strcmp("pbm", extension) == 0) {
+  } else if (strcmp("pbm", extension) == 0) {
     buf = loadImagePBM(path, &width, &height);
     maxVal = 255;
+  } else {
+    fatalError("loadIntImage: filename '%s' must have either pgm or pbm as extension. \n", path);
   }
   // copy buffer into image structure
   IntImage image = allocateIntImage(width, height, 0, maxVal);
@@ -848,8 +866,8 @@ static void saveIntImagePGM(IntImage image, int magicNumber, const char *path) {
       int originalMaxVal = maxVal;
       if (minVal < 0) minVal = 0;
       if (maxVal > 65535) maxVal = 65535;
-      warning("saveIntImagePGM: range of image %s is [%d,%d]. Saved image values are clamped to [%d,%d]. \n",
-            path, originalMinVal, originalMaxVal, minVal, maxVal);
+      warning("saveIntImagePGM: range of image %s is [%d,%d]. Saved image values are clamped to [%d,%d]. \n", path,
+              originalMinVal, originalMaxVal, minVal, maxVal);
     }
     unsigned short *buffer = malloc(npixels * sizeof(unsigned short));
     int idx = 0;
@@ -883,8 +901,8 @@ static void saveIntImagePBM(IntImage image, int magicNumber, const char *path) {
     int originalMaxVal = maxVal;
     if (minVal < 0) minVal = 0;
     if (maxVal > 1) maxVal = 1;
-    warning("saveIntImagePBM: range of image %s is [%d,%d]. Saved image values are clamped to [%d,%d]. \n",
-            path, originalMinVal, originalMaxVal, minVal, maxVal);
+    warning("saveIntImagePBM: range of image %s is [%d,%d]. Saved image values are clamped to [%d,%d]. \n", path,
+            originalMinVal, originalMaxVal, minVal, maxVal);
   }
   uint8_t *buffer = malloc(npixels * sizeof(uint8_t));
 
@@ -918,9 +936,10 @@ void saveIntImage(IntImage image, const char *path) {
   }
   if (strcmp(extension, "pgm") == 0) {
     saveIntImagePGM(image, 5, path);
-  }
-  if (strcmp(extension, "pbm") == 0) {
+  } else if (strcmp(extension, "pbm") == 0) {
     saveIntImagePBM(image, 4, path);
+  } else {
+    fatalError("saveIntImage: filename '%s' must have either pgm or pbm as extension. \n", path);
   }
 }
 
@@ -1332,11 +1351,11 @@ static unsigned short *loadImagePPM(const char *path, int *width, int *height, i
 RgbImage loadRgbImage(const char *path) {
   char *extension = getFileNameExtension(path);
   if (extension == NULL) {
-    fatalError("loadIntImage: filename '%s' has no extension.\n", path);
+    fatalError("loadRgbImage: filename '%s' has no extension.\n", path);
   }
   FILE *f = fopen(path, "r");
   if (f == NULL) {
-    fatalError("loadIntImage: failed to open file '%s'.\n", path);
+    fatalError("loadRgbImage: failed to open file '%s'.\n", path);
   }
   fclose(f);
 
@@ -1345,6 +1364,8 @@ RgbImage loadRgbImage(const char *path) {
 
   if (strcmp("ppm", extension) == 0) {
     buf = loadImagePPM(path, &width, &height, &maxVal);
+  } else {
+    fatalError("loadRgbImage: filename '%s' must have ppm as extension.\n", path);
   }
   // copy buffer into image structure
   RgbImage image = allocateRgbImage(width, height, 0, maxVal);
@@ -1411,7 +1432,7 @@ static void saveImagePPMasP6(const char *path, int width, int height, unsigned s
 static void saveImagePPMasP3(const char *path, int width, int height, unsigned short *buffer) {
   FILE *ppmFile = fopen(path, "w");
   if (ppmFile == NULL) {
-    fatalError("saveImagePGMasP2: failed to open file '%s'.\n", path);
+    fatalError("saveImagePPMasP3: failed to open file '%s'.\n", path);
   }
   fprintf(ppmFile, "P3\n%d %d\n", width, height);
 
@@ -1453,11 +1474,11 @@ static void saveRgbImagePPM(RgbImage image, int magicNumber, const char *path) {
   if (strcmp(extension, "ppm") == 0) {
     if ((minVal < 0) || (maxVal > 65535)) {
       int originalMinVal = minVal;
-       int originalMaxVal = maxVal;
+      int originalMaxVal = maxVal;
       if (minVal < 0) minVal = 0;
       if (maxVal > 65535) maxVal = 65535;
-      warning("saveIntImagePPM: range of image %s is [%d,%d]. Saved image values are clamped to [%d,%d]. \n",
-            path, originalMinVal, originalMaxVal, minVal, maxVal);
+      warning("saveRgbImagePPM: range of image %s is [%d,%d]. Saved image values are clamped to [%d,%d].\n", path,
+              originalMinVal, originalMaxVal, minVal, maxVal);
     }
     unsigned short *buffer = malloc(3 * npixels * sizeof(unsigned short));
     int idx = 0;
@@ -1522,7 +1543,7 @@ static void compareRgbDomains(RgbImage imageA, RgbImage imageB) {
   int minX2, maxX2, minY2, maxY2;
   getImageDomainValues(getRgbImageDomain(imageB), &minX2, &maxX2, &minY2, &maxY2);
   if (minX1 != minX2 || maxX1 != maxX2 || minY1 != minY2 || maxY1 != maxY2) {
-    fatalError("Images do not have the same domain.");
+    fatalError("Images do not have the same domain.\n");
   }
 }
 
@@ -1553,10 +1574,10 @@ RgbImage multiplyRgbImage(RgbImage imageA, RgbImage imageB) {
 
 RgbImage applyLutRgbImage(RgbImage image, int **LUT, int LUTsize) {
   if (image.minRange < 0) {
-    fatalError("applyLutIntImage: LUTs can only be applied to image with positive ");
+    fatalError("applyLutRgbImage: LUTs can only be applied to image with positive dynamic range.\n");
   }
   if (image.maxRange > LUTsize) {
-    fatalError("applyLutIntImage: LUT must be the same size as the dynamic range of the image");
+    fatalError("applyLutRgbImage: LUT must be the same size as the dynamic range of the image.\n");
   }
 
   RgbImage resultImg = allocateFromRgbImage(image);
@@ -2213,7 +2234,6 @@ void fft2Dshift(ComplexImage *image) {
 // inverse shift
 void ifft2Dshift(ComplexImage *image) { fft2Dshift(image); }
 
-
 static ComplexImage applyFunctionComplexImage(ComplexImage imageA, ComplexImage imageB, binaryOpComplex operator) {
   ComplexImage result = allocateFromComplexImage(imageA);
   int minX, maxX, minY, maxY;
@@ -2243,7 +2263,6 @@ ComplexImage multiplyComplexImage(ComplexImage imageA, ComplexImage imageB) {
   compareComplexDomains(imageA, imageB);
   return applyFunctionComplexImage(imageA, imageB, &multiplyCompOp);
 }
-
 
 DoubleImage allocateDoubleImage(int width, int height, double minValue, double maxValue) {
   return allocateDoubleImageGrid(0, width - 1, 0, height - 1, minValue, maxValue);

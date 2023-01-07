@@ -150,6 +150,27 @@ int getHeight(ImageDomain domain);
 void getWidthHeight(ImageDomain domain, int *width, int *height);
 
 /**
+ * @brief Checks whether the provided (x,y) coordinates are in the provided domain.
+ *
+ * @param domain The domain of the image.
+ * @param x The x coordinate of the pixel to check.
+ * @param y The y coordinate of the pixel to check.
+ * @return int 1 if the (x,y) coordinates fall within the domain. 0 otherwise.
+ */
+int isInDomain(ImageDomain domain, int x, int y);
+
+/**
+ * @brief Checks whether the provided (x,y) coordinates are in the provided domain without taking into consideration the
+ * image domain. This means that the x and y should fall within the range [0..width) and [0..height) respectively.
+ *
+ * @param domain The domain of the image.
+ * @param x The x coordinate of the pixel to check.
+ * @param y The y coordinate of the pixel to check.
+ * @return int 1 if the (x,y) coordinates fall within the domain. 0 otherwise.
+ */
+int isInDomainI(ImageDomain domain, int x, int y);
+
+/**
  * @brief Quality of life function. Puts the properties of the image domain into the provided arguments.
  *
  * @param domain The domain of the image.

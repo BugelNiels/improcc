@@ -1,15 +1,21 @@
 # --- MACROS
-# define program name
+# Define program name
 MAIN= improc
 
-# define the C compiler to use
+# Define the C compiler to use
 CC= gcc
 
-# define any compile-time flags
+# Define any compile-time flags
 CFLAGS= -Wall -pedantic
 
+# Use this flag if you want to compile without the image viewers.
 ifdef NOVIEW
 	CFLAGS += -DNOVIEW=1
+endif
+
+# Use this flag if you want to disable printing warnings to the console.
+ifdef DISABLE_WARNINGS
+	CFLAGS += -DDISABLE_WARNINGS=1
 endif
 
 # Make with "make RELEASE=1" for release build
@@ -19,7 +25,7 @@ else
 	CFLAGS+= -O3 -DFAST
 endif
 
-# define any libraries to link into executable
+# Define any libraries to link into executable
 LIBS= -lm
 
 ifndef NOVIEW
@@ -34,12 +40,13 @@ ifndef NOVIEW
 	endif
 endif
 
-# define C source files
+# Define C source files
 SRCS= ${wildcard src/*.c} ${wildcard src/**/*.c}
 
-# define C header files
+# Define C header files
 HDRS= ${wildcard src/*.h} ${wildcard src/**/*.h}
 
+# Remove the image viewers from the source files
 ifdef NOVIEW
 	TMPSRC := $(SRCS)
 	SRCS = $(filter-out src/greyimviewer.c,$(TMPSRC))
@@ -54,7 +61,7 @@ endif
 # --- TARGETS
 all: ${MAIN}
 
-#Builds the program
+# Builds the program
 ${MAIN}: ${SRCS} ${HDRS}
 	@echo #
 	@echo "-- BUILDING PROGRAM --"

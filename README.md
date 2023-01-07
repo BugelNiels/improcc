@@ -101,6 +101,8 @@ int getWidth(ImageDomain domain);
 int getHeight(ImageDomain domain);
 void getWidthHeight(ImageDomain domain, int *width, int *height);
 void getImageDomainValues(ImageDomain domain, int *minX, int *maxX, int *minY, int *maxY);
+int isInDomain(ImageDomain domain, int x, int y);
+int isInDomainI(ImageDomain domain, int x, int y);
 ```
 
 ___
