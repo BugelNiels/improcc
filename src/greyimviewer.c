@@ -313,6 +313,7 @@ void glutGreyScaleViewer(uint8_t *values, int width, int height, int orX, int or
     windowWidth = width;
     windowHeight = height;
     displayProcess();
+    exit(EXIT_SUCCESS);
   }
   // only parent process gets here
   free(values);

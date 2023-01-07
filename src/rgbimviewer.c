@@ -220,6 +220,7 @@ void glutRgbViewer(uint8_t *rValues, uint8_t *gValues, uint8_t *bValues, int wid
     green = gValues;
     blue = bValues;
     displayProcess();
+    exit(EXIT_SUCCESS);
   }
   // only parent process gets here
   free(rValues);
