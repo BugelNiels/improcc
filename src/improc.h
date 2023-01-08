@@ -1,10 +1,12 @@
 /**
  * @file improc.h
  * @author Arnold Meijster (a.meijster@rug.nl), Niels Bugel (n.a.bugel@rug.nl)
- * @brief This file contains all the functions you need to load, save, view and manipulate images. In an image, each
- * pixel is represented by a an integer. Each image has a certain dynamic range. This refers to a minimum and maximum
- * value a pixel in the image can have at most. Attempting to store a value that is not in the dynamic range of an image
- * is not possible.
+ * @brief This file contains all the functions you need to load, save, view and manipulate images. There are different
+ * iamges available. For the full documentation, see the GitHub page at
+ * https://github.com/BugelNiels/improcc/wiki/Documentation. Most image types have a certain dynamic range. This refers
+ * to a minimum and maximum value a pixel in the image can have at most. Attempting to store a value that is not in the
+ * dynamic range of an image is not possible. For now, the framework only support saving/loading of images in the netpbm
+ * format.
  *
  * Whereas traditional images have an x domain of [0..width) and a y domain
  * of [0..height), the images in this framework have an x domain of [minX..maxX] and a y domain of [minY..maxY]. This
@@ -12,7 +14,7 @@
  * @version 3.2
  * @date 2023-08-01
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2023 Niels Bugel, Arnold Meijster
  *
  */
 #ifndef IMPROC_H
