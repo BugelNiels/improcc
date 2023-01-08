@@ -289,16 +289,15 @@ void printIntImageLatexTable(IntImage image);
  */
 void printIntLatexTableToFile(FILE *out, IntImage image);
 
-#ifndef NOVIEW
 /**
  * @brief Opens a window that allows the user to view the image. Note that this uses OpenGL which in turn allocates
  * memory that cannot be freed. If you want to check for memory leaks, make sure that you do not run any image displays.
+ * Only prints a warning if the NOVIEW flag is enabled.
  *
  * @param image The image to view
  * @param windowTitle The title of the window.
  */
 void displayIntImage(IntImage image, const char *windowTitle);
-#endif
 
 /* ----------------------------- Image Loading + Saving ----------------------------- */
 
@@ -727,16 +726,15 @@ void printRgbImageLatexTable(RgbImage image);
  */
 void printRgbLatexTableToFile(FILE *out, RgbImage image);
 
-#ifndef NOVIEW
 /**
  * @brief Opens a window that allows the user to view the image. Note that this uses OpenGL which in turn allocates
  * memory that cannot be freed. If you want to check for memory leaks, make sure that you do not run any image displays.
+ * Only prints a warning if the NOVIEW flag is enabled.
  *
  * @param image The image to view.
  * @param windowTitle The title of the window.
  */
 void displayRgbImage(RgbImage image, const char *windowTitle);
-#endif
 
 /* ----------------------------- Image Loading + Saving ----------------------------- */
 
@@ -813,7 +811,8 @@ RgbImage addRgbImage(RgbImage imageA, RgbImage imageB);
  *
  * @param imageA First input image.
  * @param imageB Second input image.
- * @return IntImage Output image where each pixel is the subtraction of the corresponding pixels in the two input images.
+ * @return IntImage Output image where each pixel is the subtraction of the corresponding pixels in the two input
+ * images.
  */
 RgbImage subtractRgbImage(RgbImage imageA, RgbImage imageB);
 
@@ -1035,17 +1034,15 @@ void printComplexImageLatexTable(ComplexImage image);
  */
 void printComplexLatexTableToFile(FILE *out, ComplexImage image);
 
-#ifndef NOVIEW
 /**
  * @brief Opens a window that allows the user to view the image. Note that this uses OpenGL which in turn allocates
  * memory that cannot be freed. If you want to check for memory leaks, make sure that you do not run any image displays.
- * Only the real values of the complex image are displayed.
+ * Only the real values of the complex image are displayed. Only prints a warning if the NOVIEW flag is enabled.
  *
  * @param image The image to view.
  * @param windowTitle The title of the window.
  */
 void displayComplexImage(ComplexImage image, const char *windowTitle);
-#endif
 
 /* ----------------------------- Image Saving ----------------------------- */
 

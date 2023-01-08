@@ -1,10 +1,14 @@
 // Author: Arnold Meijster (a.meijster@rug.nl)
-#include <GL/glut.h>
+
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdint.h>
 
+#ifndef NOVIEW
+
+#include <GL/glut.h>
 // glut requires the use of global variables. Since the process is forked and they are declared as statis, this is
 // should not be an issue
 static const char *windowTitle;
@@ -23,15 +27,15 @@ static void fillBuffer(void) {
     return;
   }
   // fill buffer using nearest neighbour interpolation
-  double dx = (double)imageWidth/windowWidth;
-  double dy = (double)imageHeight/windowHeight;
+  double dx = (double)imageWidth / windowWidth;
+  double dy = (double)imageHeight / windowHeight;
   int dbidx = 0;
   for (int i = 0; i < windowHeight; i++) {
-    int y = i*dy;  // truncates to int!
+    int y = i * dy;  // truncates to int!
     y = imageHeight - 1 - y;
-    int yIdx = y*imageWidth;
+    int yIdx = y * imageWidth;
     for (int j = 0; j < windowWidth; j++) {
-      int x = j*dx;
+      int x = j * dx;
       int pixval = image[x + yIdx];
       if (showOriginMode && x == originX && y == originY) {
         displayBuffer[dbidx++] = 255;
@@ -56,7 +60,7 @@ static void greyLUT() {  // linear greyscale Look Up Table (LUT)
 }
 
 static void invertImage() {
-  int npixels = imageWidth*imageHeight;
+  int npixels = imageWidth * imageHeight;
   for (int i = 0; i < npixels; i++) {
     image[i] = 255 - image[i];
   }
@@ -73,7 +77,7 @@ static void randomLUT() {  // random colour Look Up Table (LUT)
 }
 
 static void getMinMax(int *minimum, int *maximum) {
-  int min, max, npixels = imageWidth*imageHeight;
+  int min, max, npixels = imageWidth * imageHeight;
   min = max = image[0];
   for (int i = 0; i < npixels; i++) {
     min = (image[i] < min ? image[i] : min);
@@ -86,10 +90,10 @@ static void getMinMax(int *minimum, int *maximum) {
 static void contrastStretchLUT() {  // contrast stretch
   int min, max;
   getMinMax(&min, &max);
-  double scale = 255.0/(max - min);
+  double scale = 255.0 / (max - min);
   printf("Linear contrast stretch: min=%d, max=%d, stretchfactor=%lf\n", min, max, scale);
   for (int i = 0; i < 256; i++) {
-    LUT[i][0] = LUT[i][1] = LUT[i][2] = (0.5 + scale*(i - min));
+    LUT[i][0] = LUT[i][1] = LUT[i][2] = (0.5 + scale * (i - min));
   }
   thresholdMode = 0;
 }
@@ -97,15 +101,15 @@ static void contrastStretchLUT() {  // contrast stretch
 static void histEqLUT() {
   printf("Histogram Equalization\n");
   int *histogram = calloc(sizeof(int), 256);
-  int npixels = imageWidth*imageHeight;
+  int npixels = imageWidth * imageHeight;
   for (int i = 0; i < npixels; i++) {
     histogram[image[i]]++;
   }
   double sum = 0.0;
   for (int i = 0; i < 256; i++) {
     sum += histogram[i];
-    double cdf = sum/npixels;
-    LUT[i][0] = LUT[i][1] = LUT[i][2] = 0.5 + 255*cdf;
+    double cdf = sum / npixels;
+    LUT[i][0] = LUT[i][1] = LUT[i][2] = 0.5 + 255 * cdf;
   }
   free(histogram);
   thresholdMode = 0;
@@ -114,7 +118,7 @@ static void histEqLUT() {
 static void thresholdLUT() {
   printf("threshold = %d\n", threshold);
   for (int i = 0; i < 256; i++) {
-    LUT[i][0] = LUT[i][1] = LUT[i][2] = 255*(i >= threshold);
+    LUT[i][0] = LUT[i][1] = LUT[i][2] = 255 * (i >= threshold);
   }
   thresholdMode = 1;
 }
@@ -122,7 +126,7 @@ static void thresholdLUT() {
 static void init(void) {
   int min, max;
   getMinMax(&min, &max);
-  threshold = (min + max)/2;  // initial threshold
+  threshold = (min + max) / 2;  // initial threshold
   greyLUT();
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glShadeModel(GL_FLAT);
@@ -141,7 +145,7 @@ static void reshapeDisplayBuffer(int w, int h) {
   if ((windowWidth != w) || (windowHeight != h)) {
     windowWidth = w;
     windowHeight = h;
-    displayBuffer = realloc(displayBuffer, 3*w*h);
+    displayBuffer = realloc(displayBuffer, 3 * w * h);
     redrawNeeded = 1;
   }
 }
@@ -156,10 +160,10 @@ static void reshape(int w, int h) {
 }
 
 static void aspectRatio() {
-  double dx = (double)windowWidth/imageWidth;
-  double dy = (double)windowHeight/imageHeight;
+  double dx = (double)windowWidth / imageWidth;
+  double dy = (double)windowHeight / imageHeight;
   double scale = (dx > dy ? dx : dy);
-  reshapeDisplayBuffer(scale*imageWidth, scale*imageHeight);
+  reshapeDisplayBuffer(scale * imageWidth, scale * imageHeight);
   glutReshapeWindow(windowWidth, windowHeight);
 }
 
@@ -213,7 +217,7 @@ static void keyboard(unsigned char key, int x, int y) {
       if ((windowWidth != imageWidth) || (windowHeight != imageHeight)) {
         windowWidth = imageWidth;
         windowHeight = imageHeight;
-        displayBuffer = realloc(displayBuffer, 3*windowWidth*windowHeight);
+        displayBuffer = realloc(displayBuffer, 3 * windowWidth * windowHeight);
         glutReshapeWindow(windowWidth, windowHeight);
       }
       break;
@@ -227,11 +231,11 @@ static void mouse(int button, int state, int x, int y) {
   if (state == GLUT_DOWN) {
     switch (button) {
       case GLUT_LEFT_BUTTON:
-        dx = (double)imageWidth/windowWidth;
-        dy = (double)imageHeight/windowHeight;
-        y = y*dy;  // truncates to int
-        x = x*dx;  // truncates to int
-        int idx = y*imageWidth + x;
+        dx = (double)imageWidth / windowWidth;
+        dy = (double)imageHeight / windowHeight;
+        y = y * dy;  // truncates to int
+        x = x * dx;  // truncates to int
+        int idx = y * imageWidth + x;
         printf("im[%d][%d] = %d\n", y, x, LUT[image[idx]][0]);
         return;                 // instead of break: saves an unnecessary redisplay
       case GLUT_RIGHT_BUTTON:   // right button clicks are ignored
@@ -248,7 +252,7 @@ static void mouse(int button, int state, int x, int y) {
           }
         } else {
           // zoom in
-          reshape(1.1*windowWidth, 1.1*windowHeight);
+          reshape(1.1 * windowWidth, 1.1 * windowHeight);
           glutReshapeWindow(windowWidth, windowHeight);
         }
         break;
@@ -262,7 +266,7 @@ static void mouse(int button, int state, int x, int y) {
           }
         } else {
           // zoom out
-          reshape(0.9*windowWidth, 0.9*windowHeight);
+          reshape(0.9 * windowWidth, 0.9 * windowHeight);
           glutReshapeWindow(windowWidth, windowHeight);
         }
         break;
@@ -272,7 +276,7 @@ static void mouse(int button, int state, int x, int y) {
 }
 
 static void displayProcess() {
-  displayBuffer = malloc(3*imageWidth*imageHeight);
+  displayBuffer = malloc(3 * imageWidth * imageHeight);
   char *argv[1];
   int argc = 1;
   argv[0] = "improc";
@@ -297,7 +301,7 @@ void glutGreyScaleViewer(uint8_t *values, int width, int height, int orX, int or
     if (winPosX + width + 16 > 1366) {
       // 16 seems reasonable for window frame width
       winPosX = 0;
-      winPosY += height/2;
+      winPosY += height / 2;
       if (winPosY > 768) {
         winPosX = winPosY = 0;
       }
@@ -319,3 +323,12 @@ void glutGreyScaleViewer(uint8_t *values, int width, int height, int orX, int or
   free(values);
   winPosX += width + 16;
 }
+
+#else
+void glutGreyScaleViewer(uint8_t *values, int width, int height, int orX, int orY, const char *title) {
+  fprintf(stderr,
+          "warning: Greyscale image viewer for '%s' could not be opened, since the program was compiled with the "
+          "NOVIEW flag.\n",
+          title);
+}
+#endif

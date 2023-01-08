@@ -15,11 +15,27 @@
 typedef int (*binaryOp)(int, int);
 typedef double complex (*binaryOpComplex)(double complex, double complex);
 
-#ifndef NOVIEW
 // declaration of image viewer
 void glutGreyScaleViewer(uint8_t *values, int width, int height, int originX, int originY, const char *title);
 void glutRgbViewer(uint8_t *rValues, uint8_t *gValues, uint8_t *bValues, int width, int height, const char *title);
-#endif
+
+/**
+ * @brief Usefull macro for looping over a certain domain. Usage:
+ * ```C
+ * forAllPixels(domain) {
+ *   // Do something
+ * }
+ * ```
+ * An important note:
+ * When inside the body of this macro, the x and y coordinates can be accessed. These x and y values do NOT loop over
+ * the domain values, but over the width and height. This is done for performance reasons. As such, always use the I
+ * variants of getPixel and setPixel.
+ */
+#define forAllPixels(DOMAIN)                   \
+  int __width, __height;                       \
+  getWidthHeight(DOMAIN, &__width, &__height); \
+  for (int y = 0; y < __height; y++)           \
+    for (int x = 0; x < __width; x++)
 
 /** Util ****************************************************/
 
@@ -221,14 +237,8 @@ IntImage allocateIntImageGridDomain(ImageDomain domain, int minValue, int maxVal
 
 IntImage copyIntImage(IntImage image) {
   ImageDomain domain = getIntImageDomain(image);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   IntImage copy = allocateFromIntImage(image);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      setIntPixel(&copy, x, y, getIntPixel(image, x, y));
-    }
-  }
+  forAllPixels(domain) { setIntPixelI(&copy, x, y, getIntPixelI(image, x, y)); }
   return copy;
 }
 
@@ -240,15 +250,12 @@ void getDynamicRange(IntImage image, int *minRange, int *maxRange) {
 }
 
 void getMinMax(IntImage image, int *minimalValue, int *maximalValue) {
-  int minX, maxX, minY, maxY, minVal, maxVal;
-  getImageDomainValues(getIntImageDomain(image), &minX, &maxX, &minY, &maxY);
-  minVal = maxVal = getIntPixel(image, minX, minY);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int val = getIntPixel(image, x, y);
-      minVal = (val < minVal ? val : minVal);
-      maxVal = (val > maxVal ? val : maxVal);
-    }
+  int minVal, maxVal;
+  minVal = maxVal = getIntPixelI(image, 0, 0);
+  forAllPixels(getIntImageDomain(image)) {
+    int val = getIntPixelI(image, x, y);
+    minVal = (val < minVal ? val : minVal);
+    maxVal = (val > maxVal ? val : maxVal);
   }
   *minimalValue = minVal;
   *maximalValue = maxVal;
@@ -334,13 +341,8 @@ void setAllIntPixels(IntImage *image, int greyValue) {
             image->maxRange, image->maxRange);
     greyValue = image->maxRange - 1;
   }
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(getIntImageDomain(*image), &minX, &maxX, &minY, &maxY);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      setIntPixel(image, x, y, greyValue);
-    }
-  }
+
+  forAllPixels(image->domain) { setIntPixelI(image, x, y, greyValue); }
 }
 
 void setDynamicRange(IntImage *image, int newMinRange, int newMaxRange) {
@@ -390,42 +392,38 @@ void printIntLatexTableToFile(FILE *out, IntImage image) {
 
 void printIntImageLatexTable(IntImage image) { printIntLatexTableToFile(stdout, image); }
 
-#ifndef NOVIEW
 static uint8_t *intImageToByteBuffer(IntImage image) {
   ImageDomain domain = getIntImageDomain(image);
-  int minX, maxX, minY, maxY, width = getWidth(domain), height = getHeight(domain);
-  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+  int width, height;
+  getWidthHeight(domain, &width, &height);
 
   uint8_t *buffer = safeMalloc(width * height);
   int idx = 0;
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int gval = getIntPixel(image, x, y);
-      buffer[idx++] = ((gval < 0) || (gval > 255) ? 0 : gval);
-    }
+  forAllPixels(domain) {
+    int gval = getIntPixelI(image, x, y);
+    buffer[idx++] = ((gval < 0) || (gval > 255) ? 0 : gval);
   }
   return buffer;
 }
 
 static void rgbImageToByteBuffers(RgbImage image, uint8_t **rBuf, uint8_t **gBuf, uint8_t **bBuf) {
   ImageDomain domain = getRgbImageDomain(image);
-  int minX, maxX, minY, maxY, width = getWidth(domain), height = getHeight(domain);
-  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
+  int width, height;
+  getWidthHeight(domain, &width, &height);
 
   *rBuf = safeMalloc(width * height);
   *gBuf = safeMalloc(width * height);
   *bBuf = safeMalloc(width * height);
   int idx = 0;
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int r, g, b;
-      getRgbPixel(image, x, y, &r, &g, &b);
-      (*rBuf)[idx] = ((r < 0) || (r > 255) ? 0 : r);
-      (*gBuf)[idx] = ((g < 0) || (g > 255) ? 0 : g);
-      (*bBuf)[idx++] = ((b < 0) || (b > 255) ? 0 : b);
-    }
+  forAllPixels(domain) {
+    int r, g, b;
+    getRgbPixelI(image, x, y, &r, &g, &b);
+    (*rBuf)[idx] = ((r < 0) || (r > 255) ? 0 : r);
+    (*gBuf)[idx] = ((g < 0) || (g > 255) ? 0 : g);
+    (*bBuf)[idx++] = ((b < 0) || (b > 255) ? 0 : b);
   }
 }
+
 
 void displayIntImage(IntImage image, const char *windowTitle) {
   uint8_t *buffer = intImageToByteBuffer(image);
@@ -448,17 +446,13 @@ void displayIntImage(IntImage image, const char *windowTitle) {
   }
   glutGreyScaleViewer(buffer, width, height, -minX, -minY, windowTitle);
 }
-#endif
 
 static IntImage applyFunctionIntImage(IntImage imageA, IntImage imageB, binaryOp operator) {
   IntImage result = allocateFromIntImage(imageA);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(getIntImageDomain(imageA), &minX, &maxX, &minY, &maxY);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int val = operator(getIntPixel(imageA, x, y), getIntPixel(imageB, x, y));
-      setIntPixel(&result, x, y, val);
-    }
+
+  forAllPixels(imageA.domain) {
+    int val = operator(getIntPixelI(imageA, x, y), getIntPixelI(imageB, x, y));
+    setIntPixelI(&result, x, y, val);
   }
   return result;
 }
@@ -517,13 +511,9 @@ IntImage applyLutIntImage(IntImage image, int *LUT, int LUTSize) {
   }
 
   IntImage resultImg = allocateFromIntImage(image);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(getIntImageDomain(image), &minX, &maxX, &minY, &maxY);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int val = LUT[getIntPixel(image, x, y)];
-      setIntPixel(&resultImg, x, y, val);
-    }
+  forAllPixels(image.domain) {
+    int val = LUT[getIntPixelI(image, x, y)];
+    setIntPixelI(&resultImg, x, y, val);
   }
   return resultImg;
 }
@@ -970,8 +960,6 @@ Histogram createHistogram(IntImage image) {
 void createRgbHistograms(RgbImage image, Histogram *redHist, Histogram *greenHist, Histogram *blueHist) {
   int minRange, maxRange;
   getRgbDynamicRange(image, &minRange, &maxRange);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(getRgbImageDomain(image), &minX, &maxX, &minY, &maxY);
 
   int histSize = maxRange - minRange + 1;
   int *redFrequencies = safeCalloc(histSize * sizeof(int));
@@ -988,14 +976,12 @@ void createRgbHistograms(RgbImage image, Histogram *redHist, Histogram *greenHis
   blueHist->frequencies = blueFrequencies;
   blueHist->minRange = minRange;
   blueHist->maxRange = maxRange;
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int r, g, b;
-      getRgbPixel(image, x, y, &r, &g, &b);
-      incrementHistogramFrequency(redHist, r);
-      incrementHistogramFrequency(greenHist, g);
-      incrementHistogramFrequency(blueHist, b);
-    }
+  forAllPixels(image.domain) {
+    int r, g, b;
+    getRgbPixelI(image, x, y, &r, &g, &b);
+    incrementHistogramFrequency(redHist, r);
+    incrementHistogramFrequency(greenHist, g);
+    incrementHistogramFrequency(blueHist, b);
   }
 }
 
@@ -1086,15 +1072,11 @@ RgbImage allocateDefaultRgbImage(int width, int height) { return allocateRgbImag
 
 RgbImage copyRgbImage(RgbImage image) {
   ImageDomain domain = getRgbImageDomain(image);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   RgbImage copy = allocateFromRgbImage(image);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int r, g, b;
-      getRgbPixel(image, x, y, &r, &g, &b);
-      setRgbPixel(&copy, x, y, r, g, b);
-    }
+  forAllPixels(domain) {
+    int r, g, b;
+    getRgbPixelI(image, x, y, &r, &g, &b);
+    setRgbPixelI(&copy, x, y, r, g, b);
   }
   return copy;
 }
@@ -1211,13 +1193,7 @@ void setAllRgbPixels(RgbImage *image, int r, int g, int b) {
   r = clampPixelValue(r, image->minRange, image->maxRange);
   g = clampPixelValue(g, image->minRange, image->maxRange);
   b = clampPixelValue(b, image->minRange, image->maxRange);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(getRgbImageDomain(*image), &minX, &maxX, &minY, &maxY);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      setRgbPixel(image, x, y, r, g, b);
-    }
-  }
+  forAllPixels(image->domain) { setRgbPixelI(image, x, y, r, g, b); }
 }
 
 /* ----------------------------- Image Printing + Viewing ----------------------------- */
@@ -1266,7 +1242,6 @@ void printRgbLatexTableToFile(FILE *out, RgbImage image) {
   fprintf(out, "\\end{tabular}\n");
 }
 
-#ifndef NOVIEW
 void displayRgbImage(RgbImage image, const char *windowTitle) {
   uint8_t *rBuf, *gBuf, *bBuf;
   rgbImageToByteBuffers(image, &rBuf, &gBuf, &bBuf);
@@ -1275,7 +1250,6 @@ void displayRgbImage(RgbImage image, const char *windowTitle) {
   getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   glutRgbViewer(rBuf, gBuf, bBuf, width, height, windowTitle);
 }
-#endif
 
 /* ----------------------------- Image Loading + Saving ----------------------------- */
 
@@ -1383,21 +1357,18 @@ RgbImage loadRgbImage(const char *path) {
 }
 
 static void getRgbMinMax(RgbImage image, int *minimalValue, int *maximalValue) {
-  int minX, maxX, minY, maxY, minVal, maxVal;
-  getImageDomainValues(getRgbImageDomain(image), &minX, &maxX, &minY, &maxY);
+  int minVal, maxVal;
   int r, g, b;
-  getRgbPixel(image, minX, minY, &r, &g, &b);
+  getRgbPixelI(image, 0, 0, &r, &g, &b);
   minVal = maxVal = r;
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      getRgbPixel(image, x, y, &r, &g, &b);
-      minVal = (r < minVal ? r : minVal);
-      maxVal = (r > maxVal ? r : maxVal);
-      minVal = (g < minVal ? g : minVal);
-      maxVal = (g > maxVal ? g : maxVal);
-      minVal = (b < minVal ? b : minVal);
-      maxVal = (b > maxVal ? b : maxVal);
-    }
+  forAllPixels(image.domain) {
+    getRgbPixelI(image, x, y, &r, &g, &b);
+    minVal = (r < minVal ? r : minVal);
+    maxVal = (r > maxVal ? r : maxVal);
+    minVal = (g < minVal ? g : minVal);
+    maxVal = (g > maxVal ? g : maxVal);
+    minVal = (b < minVal ? b : minVal);
+    maxVal = (b > maxVal ? b : maxVal);
   }
   *minimalValue = minVal;
   *maximalValue = maxVal;
@@ -1523,16 +1494,13 @@ void saveRgbImagePPMAscii(RgbImage image, const char *path) { saveRgbImagePPM(im
 
 static RgbImage applyFunctionRgbImage(RgbImage imageA, RgbImage imageB, binaryOp operator) {
   RgbImage result = allocateFromRgbImage(imageA);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(getRgbImageDomain(imageA), &minX, &maxX, &minY, &maxY);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int r1, g1, b1;
-      getRgbPixel(imageA, x, y, &r1, &g1, &b1);
-      int r2, g2, b2;
-      getRgbPixel(imageB, x, y, &r2, &g2, &b2);
-      setRgbPixel(&result, x, y, operator(r1, r2), operator(g1, g2), operator(b1, b2));
-    }
+
+  forAllPixels(imageA.domain) {
+    int r1, g1, b1;
+    getRgbPixelI(imageA, x, y, &r1, &g1, &b1);
+    int r2, g2, b2;
+    getRgbPixelI(imageB, x, y, &r2, &g2, &b2);
+    setRgbPixelI(&result, x, y, operator(r1, r2), operator(g1, g2), operator(b1, b2));
   }
   return result;
 }
@@ -1581,14 +1549,11 @@ RgbImage applyLutRgbImage(RgbImage image, int **LUT, int LUTsize) {
   }
 
   RgbImage resultImg = allocateFromRgbImage(image);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(getRgbImageDomain(image), &minX, &maxX, &minY, &maxY);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int r, g, b;
-      getRgbPixel(image, x, y, &r, &g, &b);
-      setRgbPixel(&resultImg, x, y, LUT[r][0], LUT[g][1], LUT[b][2]);
-    }
+
+  forAllPixels(image.domain) {
+    int r, g, b;
+    getRgbPixelI(image, x, y, &r, &g, &b);
+    setRgbPixelI(&resultImg, x, y, LUT[r][0], LUT[g][1], LUT[b][2]);
   }
   return resultImg;
 }
@@ -1853,14 +1818,8 @@ ComplexImage allocateComplexImage(int width, int height) {
 
 ComplexImage copyComplexImage(ComplexImage image) {
   ImageDomain domain = getComplexImageDomain(image);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   ComplexImage copy = allocateComplexImageGridDomain(domain);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      setComplexPixel(&copy, x, y, getComplexPixel(image, x, y));
-    }
-  }
+  forAllPixels(domain) { setComplexPixelI(&copy, x, y, getComplexPixelI(image, x, y)); }
   return copy;
 }
 
@@ -1891,15 +1850,12 @@ void freeComplexImage(ComplexImage image) { free(image.pixels); }
 ImageDomain getComplexImageDomain(ComplexImage image) { return image.domain; }
 
 void getComplexMinMax(ComplexImage image, double *minimalValue, double *maximalValue) {
-  int minX, maxX, minY, maxY, minVal, maxVal;
-  getImageDomainValues(getComplexImageDomain(image), &minX, &maxX, &minY, &maxY);
-  minVal = maxVal = creal(getComplexPixel(image, minX, minY));
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      double val = creal(getComplexPixel(image, x, y));
-      minVal = (val < minVal ? val : minVal);
-      maxVal = (val > maxVal ? val : maxVal);
-    }
+  int minVal, maxVal;
+  minVal = maxVal = creal(getComplexPixelI(image, 0, 0));
+  forAllPixels(image.domain) {
+    double val = creal(getComplexPixelI(image, x, y));
+    minVal = (val < minVal ? val : minVal);
+    maxVal = (val > maxVal ? val : maxVal);
   }
   *minimalValue = minVal;
   *maximalValue = maxVal;
@@ -2005,7 +1961,6 @@ void printComplexLatexTableToFile(FILE *out, ComplexImage image) {
   fprintf(out, "\\end{tabular}\n");
 }
 
-#ifndef NOVIEW
 static uint8_t *complexImageToByteBuffer(ComplexImage image) {
   ImageDomain domain = getComplexImageDomain(image);
   int minX, maxX, minY, maxY, width = getWidth(domain), height = getHeight(domain);
@@ -2035,7 +1990,6 @@ void displayComplexImage(ComplexImage image, const char *windowTitle) {
   getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   glutGreyScaleViewer(buffer, width, height, -minX, -minY, windowTitle);
 }
-#endif
 
 static IntImage complexRealValsToIntImage(ComplexImage image) {
   double min, max;
@@ -2301,14 +2255,8 @@ DoubleImage allocateFromDoubleImage(DoubleImage image) {
 
 DoubleImage copyDoubleImage(DoubleImage image) {
   ImageDomain domain = getDoubleImageDomain(image);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   DoubleImage copy = allocateFromDoubleImage(image);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      setDoublePixel(&copy, x, y, getDoublePixel(image, x, y));
-    }
-  }
+  forAllPixels(domain) { setDoublePixelI(&copy, x, y, getDoublePixelI(image, x, y)); }
   return copy;
 }
 
@@ -2322,15 +2270,12 @@ void getDoubleDynamicRange(DoubleImage image, double *minRange, double *maxRange
 ImageDomain getDoubleImageDomain(DoubleImage image) { return image.domain; }
 
 void getDoubleMinMax(DoubleImage image, double *minimalValue, double *maximalValue) {
-  int minX, maxX, minY, maxY, minVal, maxVal;
-  getImageDomainValues(getDoubleImageDomain(image), &minX, &maxX, &minY, &maxY);
-  minVal = maxVal = getDoublePixel(image, minX, minY);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int val = getDoublePixel(image, x, y);
-      minVal = (val < minVal ? val : minVal);
-      maxVal = (val > maxVal ? val : maxVal);
-    }
+  int minVal, maxVal;
+  minVal = maxVal = getDoublePixelI(image, 0, 0);
+  forAllPixels(image.domain) {
+    int val = getDoublePixelI(image, x, y);
+    minVal = (val < minVal ? val : minVal);
+    maxVal = (val > maxVal ? val : maxVal);
   }
   *minimalValue = minVal;
   *maximalValue = maxVal;
@@ -2469,32 +2414,24 @@ void printDoubleLatexTableToFile(FILE *out, DoubleImage image) {
 
 DoubleImage int2DoubleImg(IntImage image) {
   ImageDomain domain = getIntImageDomain(image);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   int minRange, maxRange;
   getDynamicRange(image, &minRange, &maxRange);
   DoubleImage doubImg = allocateDoubleImageGridDomain(domain, minRange, maxRange);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      double val = getIntPixel(image, x, y);
-      setDoublePixel(&doubImg, x, y, val);
-    }
+  forAllPixels(domain) {
+    double val = getIntPixelI(image, x, y);
+    setDoublePixelI(&doubImg, x, y, val);
   }
   return doubImg;
 }
 
 IntImage double2IntImg(DoubleImage image) {
   ImageDomain domain = getDoubleImageDomain(image);
-  int minX, maxX, minY, maxY;
-  getImageDomainValues(domain, &minX, &maxX, &minY, &maxY);
   double minRange, maxRange;
   getDoubleDynamicRange(image, &minRange, &maxRange);
   IntImage intImg = allocateIntImageGridDomain(domain, minRange, maxRange);
-  for (int y = minY; y <= maxY; y++) {
-    for (int x = minX; x <= maxX; x++) {
-      int val = getDoublePixel(image, x, y) + 0.5;
-      setIntPixel(&intImg, x, y, val);
-    }
+  forAllPixels(domain) {
+    int val = getDoublePixelI(image, x, y) + 0.5;
+    setIntPixelI(&intImg, x, y, val);
   }
   return intImg;
 }

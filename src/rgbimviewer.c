@@ -1,9 +1,14 @@
 // Author: Arnold Meijster (a.meijster@rug.nl)
-#include <GL/glut.h>
+
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdint.h>
+
+#ifndef NOVIEW
+
+#include <GL/glut.h>
 
 // glut requires the use of global variables. Since the process is forked and they are declared as statis, this is
 // should not be an issue
@@ -23,15 +28,15 @@ static void fillBuffer(void) {
     return;
   }
   // fill buffer using nearest neighbour interpolation
-  double dx = (double)imageWidth/windowWidth;
-  double dy = (double)imageHeight/windowHeight;
+  double dx = (double)imageWidth / windowWidth;
+  double dy = (double)imageHeight / windowHeight;
   int dbidx = 0;
   for (int i = 0; i < windowHeight; i++) {
-    int y = i*dy;  // truncates to int!
+    int y = i * dy;  // truncates to int!
     y = imageHeight - 1 - y;
-    int yIdx = y*imageWidth;
+    int yIdx = y * imageWidth;
     for (int j = 0; j < windowWidth; j++) {
-      int x = j*dx;
+      int x = j * dx;
       int r = red[x + yIdx];
       int g = green[x + yIdx];
       int b = blue[x + yIdx];
@@ -50,7 +55,7 @@ static void greyLUT() {  // linear greyscale Look Up Table (LUT)
 }
 
 static void invertImage() {
-  int npixels = imageWidth*imageHeight;
+  int npixels = imageWidth * imageHeight;
   for (int i = 0; i < npixels; i++) {
     red[i] = 255 - red[i];
     green[i] = 255 - green[i];
@@ -85,7 +90,7 @@ static void reshapeDisplayBuffer(int w, int h) {
   if ((windowWidth != w) || (windowHeight != h)) {
     windowWidth = w;
     windowHeight = h;
-    displayBuffer = realloc(displayBuffer, 3*w*h);
+    displayBuffer = realloc(displayBuffer, 3 * w * h);
     redrawNeeded = 1;
   }
 }
@@ -100,10 +105,10 @@ static void reshape(int w, int h) {
 }
 
 static void aspectRatio() {
-  double dx = (double)windowWidth/imageWidth;
-  double dy = (double)windowHeight/imageHeight;
+  double dx = (double)windowWidth / imageWidth;
+  double dy = (double)windowHeight / imageHeight;
   double scale = (dx > dy ? dx : dy);
-  reshapeDisplayBuffer(scale*imageWidth, scale*imageHeight);
+  reshapeDisplayBuffer(scale * imageWidth, scale * imageHeight);
   glutReshapeWindow(windowWidth, windowHeight);
 }
 
@@ -140,7 +145,7 @@ static void keyboard(unsigned char key, int x, int y) {
       if ((windowWidth != imageWidth) || (windowHeight != imageHeight)) {
         windowWidth = imageWidth;
         windowHeight = imageHeight;
-        displayBuffer = realloc(displayBuffer, 3*windowWidth*windowHeight);
+        displayBuffer = realloc(displayBuffer, 3 * windowWidth * windowHeight);
         glutReshapeWindow(windowWidth, windowHeight);
       }
       break;
@@ -154,23 +159,23 @@ static void mouse(int button, int state, int x, int y) {
   if (state == GLUT_DOWN) {
     switch (button) {
       case GLUT_LEFT_BUTTON:
-        dx = (double)imageWidth/windowWidth;
-        dy = (double)imageHeight/windowHeight;
-        y = y*dy;  // truncates to int
-        x = x*dx;  // truncates to int
-        int idx = y*imageWidth + x;
+        dx = (double)imageWidth / windowWidth;
+        dy = (double)imageHeight / windowHeight;
+        y = y * dy;  // truncates to int
+        x = x * dx;  // truncates to int
+        int idx = y * imageWidth + x;
         printf("im[%d][%d] = (%d,%d,%d)\n", y, x, LUT[red[idx]][0], LUT[green[idx]][1], LUT[blue[idx]][2]);
         return;                 // instead of break: saves an unnecessary redisplay
       case GLUT_RIGHT_BUTTON:   // right button clicks are ignored
       case GLUT_MIDDLE_BUTTON:  // middle button clicks are ignored
         return;                 // instead of break: saves an unnecessary redisplay
       case 3:
-        reshape(1.1*windowWidth, 1.1*windowHeight);
+        reshape(1.1 * windowWidth, 1.1 * windowHeight);
         glutReshapeWindow(windowWidth, windowHeight);
         break;
       case 4:
         // zoom out
-        reshape(0.9*windowWidth, 0.9*windowHeight);
+        reshape(0.9 * windowWidth, 0.9 * windowHeight);
         glutReshapeWindow(windowWidth, windowHeight);
         break;
     }
@@ -179,7 +184,7 @@ static void mouse(int button, int state, int x, int y) {
 }
 
 static void displayProcess() {
-  displayBuffer = malloc(3*imageWidth*imageHeight);
+  displayBuffer = malloc(3 * imageWidth * imageHeight);
   char *argv[1];
   int argc = 1;
   argv[0] = "improc";
@@ -204,7 +209,7 @@ void glutRgbViewer(uint8_t *rValues, uint8_t *gValues, uint8_t *bValues, int wid
     if (winPosX + width + 16 > 1366) {
       // 16 seems reasonable for window frame width
       winPosX = 0;
-      winPosY += height/2;
+      winPosY += height / 2;
       if (winPosY > 768) {
         winPosX = winPosY = 0;
       }
@@ -228,3 +233,11 @@ void glutRgbViewer(uint8_t *rValues, uint8_t *gValues, uint8_t *bValues, int wid
   free(bValues);
   winPosX += width + 16;
 }
+#else
+void glutRgbViewer(uint8_t *values, int width, int height, int orX, int orY, const char *title) {
+  fprintf(stderr,
+          "warning: RGB image viewer for '%s' could not be opened, since the program was compiled with the "
+          "NOVIEW flag.\n",
+          title);
+}
+#endif

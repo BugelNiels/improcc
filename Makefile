@@ -46,18 +46,6 @@ SRCS= ${wildcard src/*.c} ${wildcard src/**/*.c}
 # Define C header files
 HDRS= ${wildcard src/*.h} ${wildcard src/**/*.h}
 
-# Remove the image viewers from the source files
-ifdef NOVIEW
-	TMPSRC := $(SRCS)
-	SRCS = $(filter-out src/greyimviewer.c,$(TMPSRC))
-	TMPSRC := $(SRCS)
-	SRCS = $(filter-out  src/rgbimviewer.c,$(TMPSRC))
-	TMPSRC := $(SRCS)
-	SRCS = $(filter-out src/greyimviewer.h,$(TMPSRC))
-	TMPSRC := $(SRCS)
-	SRCS = $(filter-out  src/rgbimviewer.h,$(TMPSRC))
-endif
-
 # --- TARGETS
 all: ${MAIN}
 
