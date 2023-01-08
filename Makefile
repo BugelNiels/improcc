@@ -22,7 +22,7 @@ endif
 ifndef RELEASE
 	CFLAGS+= -g -O2
 else
-	CFLAGS+= -O3 -DFAST
+	CFLAGS+= -O2 -DFAST
 endif
 
 # Define any libraries to link into executable
@@ -30,7 +30,6 @@ LIBS= -lm
 
 ifndef NOVIEW
   LIBS += -lglut -lX11
-
 	OS := $(shell uname)
 	ifeq ($(OS),Darwin)
 		LIBS += -framework OpenGL

@@ -9,8 +9,8 @@
  * Whereas traditional images have an x domain of [0..width) and a y domain
  * of [0..height), the images in this framework have an x domain of [minX..maxX] and a y domain of [minY..maxY]. This
  * means that these images can work with negative indices if the image domain allows for it.
- * @version 3.0
- * @date 2022-02-21
+ * @version 3.2
+ * @date 2023-08-01
  *
  * @copyright Copyright (c) 2022
  *
