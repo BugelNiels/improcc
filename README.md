@@ -25,7 +25,7 @@ To familiarize yourself with the framework, take a look at `improc.h`. This file
 
 ## Image Viewer
 
-The framework comes with a built-in image viewer. This image viewer has the following functionality:
+The framework comes with a built-in image viewer. This image viewer makes use of OpenGL, but it can be disabled at compile time if your machine does not support this. See the [Running](#running) section. The image viewer has the following functionality:
 
 - `A` reset the aspect ratio
 - `C` contrast stretch*
@@ -62,7 +62,7 @@ To compile and run the program, do the following:
 
 ```sh
 make
-./improc <file name>
+./improc <args>
 ```
 
 To compile without the provided image viewer, use the following:
@@ -77,9 +77,15 @@ If you want to increase the performance of the framework, you can disable the sa
 make RELEASE=1
 ```
 
+If you want to remove warnings from the console output, you can do this by compiling with:
+```sh
+make DISABLE_WARNINGS=1
+```
+Any of the above flags can be combined.
+
 # Overview
 
-Below is a brief overview of all function signatures available in the framework. This image-processing framework is different from most others in the sense that it works with image domains. The indexing of images does not necessarily need to start at `0` and end at `size`, but you can specify custom ranges. For example, you can specify an image that you can index in the range of `[-1, 1]` instead of the default `[0, size)`. This is extremely useful for, among other things, convolution kernels.
+Below is a brief overview of all function signatures available in the framework. You can read the full documentation of all the functions [here](https://github.com/BugelNiels/improcc/wiki/Documentation). This image-processing framework is different from most others in the sense that it works with image domains. The indexing of images does not necessarily need to start at `0` and end at `size`, but you can specify custom ranges. For example, you can specify an image that you can index in the range of `[-1, 1]` instead of the default `[0, size)`. This is extremely useful for, among other things, convolution kernels.
 
  By default, the `getPixel` functions will index based on the domain. This means that the index `0` is not guaranteed to be the first pixel. However, sometimes it is useful to be able to have this constraint, regardless of the domain. As such, there are also the `getPixelI` variants which allow you to index from `0`, regardless of the specified domain. More details about this can be found in the documentation.
 
@@ -91,6 +97,10 @@ Below is a brief overview of all function signatures available in the framework.
 ___
 
 ## Image Domains
+
+Every image has a domain. A domain has information about the range of the `x` values, the range of the `y` values, and the width and height of the domain. Note that the ranges are inclusive, so if you loop over an image using the ranges (and not the width/height), make sure to use `<=` in your for loops and not `<`.
+
+Note that any image is allocated row-wise, so make sure to loop over the images in row-major order for performance reasons.
 
 ```C
 int getMinX(ImageDomain domain);
@@ -108,6 +118,8 @@ int isInDomainI(ImageDomain domain, int x, int y);
 ___
 
 ## Int Images
+
+`IntImage`s are images that consist of only integer values. The integer values that an int image can have depends on its dynamic range.
 
 **Allocation**
 
@@ -182,6 +194,8 @@ ___
 
 ## RGB Images
 
+`RgbImage`s are images that consist of 3 channels: red, green and blue. Each of the channels are represented by integer values. The integer values that a channel can have depends on its dynamic range.
+
 **Allocation**
 
 ```C
@@ -249,6 +263,8 @@ ___
 
 ## Complex Images
 
+`ComplexImage`s are images that consist complex values. These images do not have a dynamic range. When these complex images are viewed, only the real values are dispalyed. Note that these will also be clamped between 0 and 255, so make sure to do any rescaling beforehand.
+
 **Allocation**
 
 ```C
@@ -305,6 +321,8 @@ ___
 
 ## Double Images
 
+`DoubleImage`s are images that consist of double values. These images cannot be displayed directly, so they will need to be explicitly converted to `IntImage`s first.
+
 **Allocation**
 
 ```C
@@ -349,6 +367,8 @@ IntImage double2IntImg(DoubleImage image);
 ___
 
 ## Histograms
+
+There is also very simple support for histograms. These histograms can only be constructed for `IntImage`s and `RgbImage`s.
 
 **Creation**
 
