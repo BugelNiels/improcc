@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 // 1D: Fast Fourier Transform (FFT)
 #define PI 3.1415926535897932384626433832795L
@@ -2511,4 +2512,84 @@ DoubleImage ifft2DDouble(ComplexImage image) {
   free(wsp);
 
   return im;
+}
+
+typedef struct quack {
+    int *buffer;
+    int start;
+    int end;
+    int size;
+    int capacity;
+} Quack;
+
+int quackIsEmpty(Quack *quack) {
+    return quack->size == 0;
+}
+
+int quackPeekBack(Quack *quack) {
+    return quack->buffer[(quack->end + quack->capacity - 1) % quack->capacity];
+}
+
+int quackPopBack(Quack *quack) {
+    int value = quackPeekBack(quack);
+    quack->end = (quack->end + quack->capacity - 1) % quack->capacity;
+    quack->size--;
+    return value;
+}
+
+void quackPushBack(Quack *quack, int value) {
+    assert(quack->size < quack->capacity && "quack is full");
+    quack->buffer[quack->end] = value;
+    quack->end = (quack->end + 1) % quack->capacity;
+    quack->size++;
+}
+
+int quackPeekFront(Quack *quack) {
+    return quack->buffer[quack->start];
+}
+
+int quackPopFront(Quack *quack) {
+    int value = quackPeekFront(quack);
+    quack->start = (quack->start + 1) % quack->capacity;
+    quack->size--;
+    return value;
+}
+
+void quackPushFront(Quack *quack, int value) {
+    assert(quack->size < quack->capacity);
+    quack->start = (quack->start + quack->capacity - 1) % quack->capacity;
+    quack->buffer[quack->start] = value;
+    quack->size++;
+}
+
+int *slidingWindowMax(int *img, int n, int w) {
+    int memory[w];
+    int *out = malloc(sizeof(out[0]) * n);
+
+    // our quack datastructure stores indices of numers in our original array
+    Quack quack;
+    quack.buffer = memory;
+    quack.start = 0;
+    quack.end = 0;
+    quack.size = 0;
+    quack.capacity = w;
+
+    for (int i = 0; i < n; i++) {
+        // remove any elements from the front (oldest side) of the quack that are now out of the "reach" of our window
+        while (!quackIsEmpty(&quack) && quackPeekFront(&quack) <= i - w) {
+            quackPopFront(&quack);
+        }
+
+        // we are now observing the current value, img[i]. we pop values from the back (most recent side) of the quack
+        // until we encounter a value that is larger (and makes the current value insignificant).
+        while (!quackIsEmpty(&quack) && img[quackPeekBack(&quack)] <= img[i]) {
+            quackPopBack(&quack);
+        }
+
+        quackPushBack(&quack, i);
+
+        out[i] = img[quackPeekFront(&quack)];
+    }
+    
+    return out;
 }

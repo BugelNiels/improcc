@@ -1328,4 +1328,7 @@ DoubleImage int2DoubleImg(IntImage image);
  */
 IntImage double2IntImg(DoubleImage image);
 
+
+int *slidingWindowMax(int *img, int n, int w);
+
 #endif  // IMPROC_H
