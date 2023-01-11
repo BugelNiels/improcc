@@ -2581,7 +2581,8 @@ int *slidingWindowMax(int *img, int n, int w) {
         }
 
         // we are now observing the current value, img[i]. we pop values from the back (most recent side) of the quack
-        // until we encounter a value that is larger (and makes the current value insignificant).
+        // until we encounter a value that is larger (and makes the current value insignificant). our loop invariant is
+        // that we keep the largest value currently in our window at the front of the quack.
         while (!quackIsEmpty(&quack) && img[quackPeekBack(&quack)] <= img[i]) {
             quackPopBack(&quack);
         }
