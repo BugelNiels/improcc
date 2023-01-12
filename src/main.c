@@ -33,11 +33,12 @@ void thresholdDemo(const char *path) {
   freeIntImage(image);
 }
 
-int main(int argc, char *argv[]) {
-  if (argc != 2) {
-    fprintf(stderr, "Fatal error: Please provide an image file as arugment.\n");
-    exit(EXIT_FAILURE);
-  }
-  thresholdDemo(argv[1]);
-  return EXIT_SUCCESS;
+int main() {
+    IntImage img = loadIntImage("images/lena.pgm");
+
+    IntImage eroded = erodeIntImageRect(img, 5, 5);
+
+    saveIntImage(eroded, "lena-eroded.pgm");
+
+    freeIntImage(img);
 }

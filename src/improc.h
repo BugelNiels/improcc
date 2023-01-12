@@ -1329,6 +1329,7 @@ DoubleImage int2DoubleImg(IntImage image);
 IntImage double2IntImg(DoubleImage image);
 
 
-int *slidingWindowMax(int *img, int n, int w);
-
+int *slidingWindowMax(int *img, int n, int w, int ord, int offset, int start);
+IntImage dilateIntImageRect(IntImage image, int kw, int kh);
+IntImage erodeIntImageRect(IntImage image, int kw, int kh);
 #endif  // IMPROC_H

@@ -2562,9 +2562,8 @@ void quackPushFront(Quack *quack, int value) {
     quack->size++;
 }
 
-int *slidingWindowMax(int *img, int n, int w) {
+int *slidingWindowOrd(int *img, int *out, int n, int w, int ord, int offset, int start) {
     int memory[w];
-    int *out = malloc(sizeof(out[0]) * n);
 
     // our quack datastructure stores indices of numers in our original array
     Quack quack;
@@ -2583,14 +2582,43 @@ int *slidingWindowMax(int *img, int n, int w) {
         // we are now observing the current value, img[i]. we pop values from the back (most recent side) of the quack
         // until we encounter a value that is larger (and makes the current value insignificant). our loop invariant is
         // that we keep the largest value currently in our window at the front of the quack.
-        while (!quackIsEmpty(&quack) && img[quackPeekBack(&quack)] <= img[i]) {
+        // NOTE: the comparison to ord is a complicated way of switching between < and >
+        while (!quackIsEmpty(&quack) && (img[quackPeekBack(&quack) * offset + start] <= img[i * offset + start]) == ord) {
             quackPopBack(&quack);
         }
 
         quackPushBack(&quack, i);
 
-        out[i] = img[quackPeekFront(&quack)];
+        out[i * offset + start] = img[quackPeekFront(&quack)];
     }
     
     return out;
+}
+
+IntImage dilateErodeIntImageRect(IntImage image, int kw, int kh, int flag) {
+    ImageDomain domain = getIntImageDomain(image);
+    IntImage result = allocateIntImageGridDomain(domain, image.minRange, image.maxRange);
+    
+    for (int row = domain.minY; row <= domain.maxY; row++) {
+        slidingWindowOrd(image.pixels[0], result.pixels[0], domain.maxX - domain.minX, kw, flag, 1, 0);
+    }
+
+    IntImage copy = copyIntImage(result);
+
+    for (int col = domain.minX; col <= domain.maxX; col++) {
+        int height = domain.maxY - domain.minY;
+        slidingWindowOrd(copy.pixels[0], result.pixels[0], height, kh, flag, height, col);
+    }
+
+    freeIntImage(copy);
+
+    return result;
+}
+
+IntImage dilateIntImageRect(IntImage image, int kw, int kh) {
+    return dilateErodeIntImageRect(image, kw, kh, 1);
+}
+
+IntImage erodeIntImageRect(IntImage image, int kw, int kh) {
+    return dilateErodeIntImageRect(image, kw, kh, 0);
 }
