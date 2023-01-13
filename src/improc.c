@@ -2522,11 +2522,11 @@ typedef struct quack {
     int capacity;
 } Quack;
 
-int quackIsEmpty(Quack *quack) {
+inline int quackIsEmpty(Quack *quack) {
     return quack->size == 0;
 }
 
-int quackPeekBack(Quack *quack) {
+inline int quackPeekBack(Quack *quack) {
     return quack->buffer[(quack->end + quack->capacity - 1) % quack->capacity];
 }
 
@@ -2538,13 +2538,15 @@ int quackPopBack(Quack *quack) {
 }
 
 void quackPushBack(Quack *quack, int value) {
-    assert(quack->size < quack->capacity && "quack is full");
+    if (quack->size >= quack->capacity) {
+        fatalError("attempted to insert into full quack. capactiy: %d", quack->capacity);
+    }
     quack->buffer[quack->end] = value;
     quack->end = (quack->end + 1) % quack->capacity;
     quack->size++;
 }
 
-int quackPeekFront(Quack *quack) {
+inline int quackPeekFront(Quack *quack) {
     return quack->buffer[quack->start];
 }
 
@@ -2556,22 +2558,28 @@ int quackPopFront(Quack *quack) {
 }
 
 void quackPushFront(Quack *quack, int value) {
-    assert(quack->size < quack->capacity);
+    if (quack->size >= quack->capacity) {
+        fatalError("attempted to insert into full quack. capactiy: %d", quack->capacity);
+    }
     quack->start = (quack->start + quack->capacity - 1) % quack->capacity;
     quack->buffer[quack->start] = value;
     quack->size++;
 }
 
-int *slidingWindowOrd(int *img, int *out, int n, int w, int ord, int offset, int start) {
-    int memory[w];
-
-    // our quack datastructure stores indices of numers in our original array
+Quack createNewQuackWithMemory(int capacity, int *memory) {
     Quack quack;
     quack.buffer = memory;
     quack.start = 0;
     quack.end = 0;
     quack.size = 0;
-    quack.capacity = w;
+    quack.capacity = capacity;
+
+    return quack;
+}
+
+int *slidingWindowOrd(int *img, int *out, int n, int w, int ord, int offset, int start, int *workspace) {
+    // our quack datastructure stores indices of numers in our original array
+    Quack quack = createNewQuackWithMemory(w, workspace);
 
     for (int i = 0; i < n; i++) {
         // remove any elements from the front (oldest side) of the quack that are now out of the "reach" of our window
@@ -2589,7 +2597,7 @@ int *slidingWindowOrd(int *img, int *out, int n, int w, int ord, int offset, int
 
         quackPushBack(&quack, i);
 
-        out[i * offset + start] = img[quackPeekFront(&quack)];
+        out[i * offset + start] = img[quackPeekFront(&quack) * offset + start];
     }
     
     return out;
@@ -2598,19 +2606,30 @@ int *slidingWindowOrd(int *img, int *out, int n, int w, int ord, int offset, int
 IntImage dilateErodeIntImageRect(IntImage image, int kw, int kh, int flag) {
     ImageDomain domain = getIntImageDomain(image);
     IntImage result = allocateIntImageGridDomain(domain, image.minRange, image.maxRange);
-    
-    for (int row = domain.minY; row <= domain.maxY; row++) {
-        slidingWindowOrd(image.pixels[0], result.pixels[0], domain.maxX - domain.minX, kw, flag, 1, 0);
+    int width, height;
+    getWidthHeight(domain, &width, &height);
+
+    // we allocate memory here to avoid having to repeat allocations for every row/col
+    int largestDim = maxOp(kw, kh);
+    int *memory = malloc(largestDim * sizeof(*memory));
+
+    // first we run the min/max operation on the image row-wise, saving the
+    // sliding window min/max in the result image
+    for (int row = 0; row < height; row++) {
+        slidingWindowOrd(image.pixels[0], result.pixels[0], width, kw, flag, 1, row * width, memory);
     }
 
+    // next we make a copy of the result (because the algorithm does not run in
+    // place) and run the min/max operator on the columns of the image (skipping
+    // by a full column height each iteration)
     IntImage copy = copyIntImage(result);
 
-    for (int col = domain.minX; col <= domain.maxX; col++) {
-        int height = domain.maxY - domain.minY;
-        slidingWindowOrd(copy.pixels[0], result.pixels[0], height, kh, flag, height, col);
+    for (int col = 0; col < width; col++) {
+        slidingWindowOrd(copy.pixels[0], result.pixels[0], height, kh, flag, height, col, memory);
     }
 
     freeIntImage(copy);
+    free(memory);
 
     return result;
 }
