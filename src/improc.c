@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 // 1D: Fast Fourier Transform (FFT)
 #define PI 3.1415926535897932384626433832795L
@@ -2558,7 +2557,7 @@ static int quackPopFront(Quack *quack) {
 }
 
 #if 0
-  // this function is unused, but i don't know if we want to keep it for completion sake
+// this function is unused, but i don't know if we want to keep it for completion sake
 static void quackPushFront(Quack *quack, int value) {
   if (quack->size >= quack->capacity) {
     fatalError("attempted to insert into full quack. capactiy: %d", quack->capacity);
