@@ -2557,6 +2557,8 @@ static int quackPopFront(Quack *quack) {
   return value;
 }
 
+#if 0
+  // this function is unused, but i don't know if we want to keep it for completion sake
 static void quackPushFront(Quack *quack, int value) {
   if (quack->size >= quack->capacity) {
     fatalError("attempted to insert into full quack. capactiy: %d", quack->capacity);
@@ -2565,6 +2567,7 @@ static void quackPushFront(Quack *quack, int value) {
   quack->buffer[quack->start] = value;
   quack->size++;
 }
+#endif
 
 static Quack createNewQuackWithMemory(int capacity, int *memory) {
   Quack quack;
