@@ -2530,14 +2530,14 @@ inline int quackPeekBack(Quack *quack) {
     return quack->buffer[(quack->end + quack->capacity - 1) % quack->capacity];
 }
 
-int quackPopBack(Quack *quack) {
+static int quackPopBack(Quack *quack) {
     int value = quackPeekBack(quack);
     quack->end = (quack->end + quack->capacity - 1) % quack->capacity;
     quack->size--;
     return value;
 }
 
-void quackPushBack(Quack *quack, int value) {
+static void quackPushBack(Quack *quack, int value) {
     if (quack->size >= quack->capacity) {
         fatalError("attempted to insert into full quack. capactiy: %d", quack->capacity);
     }
@@ -2550,14 +2550,14 @@ inline int quackPeekFront(Quack *quack) {
     return quack->buffer[quack->start];
 }
 
-int quackPopFront(Quack *quack) {
+static int quackPopFront(Quack *quack) {
     int value = quackPeekFront(quack);
     quack->start = (quack->start + 1) % quack->capacity;
     quack->size--;
     return value;
 }
 
-void quackPushFront(Quack *quack, int value) {
+static void quackPushFront(Quack *quack, int value) {
     if (quack->size >= quack->capacity) {
         fatalError("attempted to insert into full quack. capactiy: %d", quack->capacity);
     }
@@ -2566,7 +2566,7 @@ void quackPushFront(Quack *quack, int value) {
     quack->size++;
 }
 
-Quack createNewQuackWithMemory(int capacity, int *memory) {
+static Quack createNewQuackWithMemory(int capacity, int *memory) {
     Quack quack;
     quack.buffer = memory;
     quack.start = 0;
@@ -2577,7 +2577,22 @@ Quack createNewQuackWithMemory(int capacity, int *memory) {
     return quack;
 }
 
-int *slidingWindowOrd(int *img, int *out, int n, int w, int ord, int offset, int start, int *workspace) {
+/**
+* Compute a sliding window (of size `w`) minimum/maximum depending on the `ord` flag of the 1D array (size = n).
+* The `offset` and `start` parameters are used to change the indexing in the array so that element i is accessed at
+* location i * offset + start. A `workspace` array (of size w elements) is given (does not need to be initialised) to
+* use as memory for the quack implementation.
+*
+* @param *img The 1D int array that the sliding window operation will be computed on
+* @param *out The 1D int array that the result of the operation will be stored in
+* @param n The size of both of the arrays (in nr of elements)
+* @param w The size of the window
+* @param ord If `ord` == 1, the sliding minimum is computed. Otherwise a sliding maximum is computed
+* @param offset Determines the gap in position in the input/output arrays between two successive elements
+* @param start Determines the position of the first element in the input/output arrays
+* @param *workspace An array of size w (in nr of elements) to use as backing storage for our internal datastructure.
+*/
+static void slidingWindowOrd(int *img, int *out, int n, int w, int ord, int offset, int start, int *workspace) {
     // our quack datastructure stores indices of numers in our original array
     Quack quack = createNewQuackWithMemory(w, workspace);
 
@@ -2599,10 +2614,17 @@ int *slidingWindowOrd(int *img, int *out, int n, int w, int ord, int offset, int
 
         out[i * offset + start] = img[quackPeekFront(&quack) * offset + start];
     }
-    
-    return out;
 }
 
+/**
+* Perform either a dilation or an erosion (depending on flag) on the input image. The structuring element that will be
+* used will be a rectangle of width `kw` and height `kh`.
+*
+* @param IntImage image   The image that the dilation or erosion will be applied on.
+* @param int kw           The width of the rectangular structuring element (kernel)
+* @param int kh           The heigth of the rectangular structuring element (kernel)
+* @param int flag         If `flag` == 1, a dilation will be performed. Otherwise an erosion will be performed.
+*/
 IntImage dilateErodeIntImageRect(IntImage image, int kw, int kh, int flag) {
     ImageDomain domain = getIntImageDomain(image);
     IntImage result = allocateIntImageGridDomain(domain, image.minRange, image.maxRange);
@@ -2613,18 +2635,19 @@ IntImage dilateErodeIntImageRect(IntImage image, int kw, int kh, int flag) {
     int largestDim = maxOp(kw, kh);
     int *memory = malloc(largestDim * sizeof(*memory));
 
-    // first we run the min/max operation on the image row-wise, saving the
-    // sliding window min/max in the result image
+    // first we run the min/max operation on the image row-wise, saving the sliding window min/max in the result image
     for (int row = 0; row < height; row++) {
         slidingWindowOrd(image.pixels[0], result.pixels[0], width, kw, flag, 1, row * width, memory);
     }
 
-    // next we make a copy of the result (because the algorithm does not run in
-    // place) and run the min/max operator on the columns of the image (skipping
-    // by a full column height each iteration)
+    // next we make a copy of the result (because the algorithm does not run in place) and run the min/max operator on
+    // the columns of the image (skipping by a full column height each iteration)
     IntImage copy = copyIntImage(result);
 
     for (int col = 0; col < width; col++) {
+        // in the below function call, the third last `height` parameter specifies the jump offset between iterations.
+        // there is a good chance that transposing the image twice will be faster due to row major indexing. we will
+        // need to benchmark this.
         slidingWindowOrd(copy.pixels[0], result.pixels[0], height, kh, flag, height, col, memory);
     }
 
@@ -2634,10 +2657,28 @@ IntImage dilateErodeIntImageRect(IntImage image, int kw, int kh, int flag) {
     return result;
 }
 
+/**
+* Perform a grayscale dilation on the input image. The structuring element (kernel) that will be used will be a
+* rectangle of width `kw` and height `kh`.
+*
+* @param IntImage image   The image that the dilation or erosion will be applied on.
+* @param int kw           The width of the rectangular structuring element (kernel)
+* @param int kh           The heigth of the rectangular structuring element (kernel)
+* @return IntImage        The dilated input image
+*/
 IntImage dilateIntImageRect(IntImage image, int kw, int kh) {
     return dilateErodeIntImageRect(image, kw, kh, 1);
 }
 
+/**
+* Perform a grayscale erosion on the input image. The structuring element (kernel) that will be used will be a rectangle
+* of width `kw` and height `kh`.
+*
+* @param IntImage image   The image that the dilation or erosion will be applied on.
+* @param int kw           The width of the rectangular structuring element (kernel)
+* @param int kh           The heigth of the rectangular structuring element (kernel)
+* @return IntImage        The eroded input image
+*/
 IntImage erodeIntImageRect(IntImage image, int kw, int kh) {
     return dilateErodeIntImageRect(image, kw, kh, 0);
 }
