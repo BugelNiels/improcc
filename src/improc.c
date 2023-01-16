@@ -401,7 +401,9 @@ static uint8_t *intImageToByteBuffer(IntImage image) {
   int idx = 0;
   forAllPixels(domain) {
     int gval = getIntPixelI(image, x, y);
-    buffer[idx++] = ((gval < 0) || (gval > 255) ? 0 : gval);
+    gval = gval < 0 ? 0 : gval;
+    gval = gval > 255 ? 255 : gval;
+    buffer[idx++] = gval;
   }
   return buffer;
 }
@@ -418,12 +420,17 @@ static void rgbImageToByteBuffers(RgbImage image, uint8_t **rBuf, uint8_t **gBuf
   forAllPixels(domain) {
     int r, g, b;
     getRgbPixelI(image, x, y, &r, &g, &b);
+    r = r < 0 ? 0 : r;
+    r = r > 255 ? 255 : r;
+    g = g < 0 ? 0 : g;
+    g = g > 255 ? 255 : g;
+    b = b < 0 ? 0 : b;
+    b = b > 255 ? 255 : b;
     (*rBuf)[idx] = ((r < 0) || (r > 255) ? 0 : r);
     (*gBuf)[idx] = ((g < 0) || (g > 255) ? 0 : g);
     (*bBuf)[idx++] = ((b < 0) || (b > 255) ? 0 : b);
   }
 }
-
 
 void displayIntImage(IntImage image, const char *windowTitle) {
   uint8_t *buffer = intImageToByteBuffer(image);
@@ -1977,7 +1984,9 @@ static uint8_t *complexImageToByteBuffer(ComplexImage image) {
     for (int x = minX; x <= maxX; x++) {
       double val = creal(getComplexPixel(image, x, y));
       int gval = (int)(val * scaleFactor + 0.5);
-      buffer[idx++] = ((gval < 0) || (gval > 255) ? 255 : gval);
+      gval = gval < 0 ? 0 : gval;
+      gval = gval > 255 ? 255 : gval;
+      buffer[idx++] = gval;
     }
   }
   return buffer;
