@@ -2513,6 +2513,11 @@ DoubleImage ifft2DDouble(ComplexImage image) {
   return im;
 }
 
+/**
+ * The Quack is a double ended queue (also known as Dequeue) datastructure that
+ * allows for pushing and popping at either side of a list in O(1) time. The
+ * name `Quack` is derived from Queue + Stack.
+ */
 typedef struct quack {
   int *buffer;
   int start;
@@ -2635,7 +2640,7 @@ IntImage dilateErodeIntImageRect(IntImage image, int kw, int kh, int flag) {
 
   // we allocate memory here to avoid having to repeat allocations for every row/col
   int largestDim = maxOp(kw, kh);
-  int *memory = malloc(largestDim * sizeof(*memory));
+  int *memory = safeMalloc(largestDim * sizeof(*memory));
 
   // first we run the min/max operation on the image row-wise, saving the sliding window min/max in the result image
   for (int row = 0; row < height; row++) {
