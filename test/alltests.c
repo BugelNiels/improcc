@@ -1,4 +1,4 @@
-#include "../ccheckmate/ccheckmate.h"
+#include "ccheckmate/ccheckmate.h"
 
 void testTrue() { assert_true(1); }
 

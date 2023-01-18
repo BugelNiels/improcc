@@ -19,10 +19,10 @@ endif
 LIBS= -lm
 
 # Define C source files
-SRCS= ${wildcard src/*.c} ${wildcard src/**/*.c} ${wildcard ccheckmate/*.c} ${wildcard test/*.c}
+SRCS= ${wildcard ../src/*.c} ${wildcard ../src/**/*.c} ${wildcard ccheckmate/*.c} ${wildcard *.c}
 
 # Define C header files
-HDRS= ${wildcard src/*.h} ${wildcard src/**/*.h} ${wildcard ccheckmate/*.h} ${wildcard test/*.c}
+HDRS= ${wildcard ../src/*.h} ${wildcard ../src/**/*.h} ${wildcard ccheckmate/*.h} ${wildcard *.c}
 
 # --- TARGETS
 all: ${MAIN}
