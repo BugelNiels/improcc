@@ -1,6 +1,6 @@
 #include "../ccheckmate/ccheckmate.h"
 
-void testTrue() { assert_eq(1, 1); }
+void testTrue() { assert_true(1); }
 
 BEGIN_CCHECK_MATE
 #ifdef FAST
