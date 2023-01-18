@@ -179,6 +179,8 @@ IntImage addIntImage(IntImage imageA, IntImage imageB);
 IntImage subtractIntImage(IntImage imageA, IntImage imageB);
 IntImage multiplyIntImage(IntImage imageA, IntImage imageB);
 IntImage applyLutIntImage(IntImage image, int *LUT, int LUTSize);
+IntImage dilateIntImageRect(IntImage image, int kw, int kh);
+IntImage erodeIntImageRect(IntImage image, int kw, int kh);
 ```
 
 **Transformations**

@@ -470,6 +470,28 @@ void flipIntImageHorizontal(IntImage *image);
  */
 void flipIntImageVertical(IntImage *image);
 
+/**
+* @brief Perform a grayscale dilation on the input image. The structuring element (kernel) that will be used will be a
+* rectangle of width `kw` and height `kh`.
+*
+* @param image The image that the dilation or erosion will be applied on.
+* @param kw The width of the rectangular structuring element (kernel)
+* @param kh The heigth of the rectangular structuring element (kernel)
+* @return IntImage The dilated input image
+*/
+IntImage dilateIntImageRect(IntImage image, int kw, int kh);
+
+/**
+* @brief Perform a grayscale erosion on the input image. The structuring element (kernel) that will be used will be a
+* rectangle of width `kw` and height `kh`.
+*
+* @param image The image that the dilation or erosion will be applied on.
+* @param kw The width of the rectangular structuring element (kernel)
+* @param kh The heigth of the rectangular structuring element (kernel)
+* @return IntImage The eroded input image
+*/
+IntImage erodeIntImageRect(IntImage image, int kw, int kh);
+
 /* ----------------------------- Image Histogram Functions ----------------------------- */
 
 /**
@@ -1327,5 +1349,4 @@ DoubleImage int2DoubleImg(IntImage image);
  * @return IntImage The double version of the DoubleImage
  */
 IntImage double2IntImg(DoubleImage image);
-
 #endif  // IMPROC_H
