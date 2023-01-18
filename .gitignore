@@ -54,6 +54,8 @@ dkms.conf
 improc
 improc_test
 ccheckmate/
+test/ccheckmate/
+src/demomain.c
 
 .vscode/
 *~
