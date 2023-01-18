@@ -52,6 +52,8 @@ Mkfile.old
 dkms.conf
 
 improc
+improc_test
+ccheckmate/
 
 .vscode/
 *~

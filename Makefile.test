@@ -1,0 +1,35 @@
+# --- MACROS
+# Define program name
+MAIN= improc_test
+
+# Define the C compiler to use
+CC= gcc
+
+# Define any compile-time flags
+CFLAGS= -Wall -pedantic -DNOVIEW=1 -DTEST -Wl,--wrap,main
+
+# Make with "make RELEASE=1" for release build
+ifndef RELEASE
+	CFLAGS+= -g -O2
+else
+	CFLAGS+= -O2 -DFAST
+endif
+
+# Define any libraries to link into executable
+LIBS= -lm
+
+# Define C source files
+SRCS= ${wildcard src/*.c} ${wildcard src/**/*.c} ${wildcard ccheckmate/*.c} ${wildcard test/*.c}
+
+# Define C header files
+HDRS= ${wildcard src/*.h} ${wildcard src/**/*.h} ${wildcard ccheckmate/*.h} ${wildcard test/*.c}
+
+# --- TARGETS
+all: ${MAIN}
+
+# Builds the program
+${MAIN}: ${SRCS} ${HDRS}
+	${CC} ${SRCS} ${CFLAGS} ${LIBS} -o ${MAIN}
+
+clean:
+	$(RM) *.o ${MAIN}
