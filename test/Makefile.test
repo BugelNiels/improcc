@@ -6,7 +6,7 @@ MAIN= improc_test
 CC= gcc
 
 # Define any compile-time flags
-CFLAGS= -Wall -pedantic -DNOVIEW=1 -DTEST -Wl,--wrap,main
+CFLAGS= -Wall -pedantic -DNOVIEW=1 -DTEST -Wl,--wrap,main -Iccheckmate
 
 # Make with "make RELEASE=1" for release build
 ifndef RELEASE
@@ -19,10 +19,10 @@ endif
 LIBS= -lm
 
 # Define C source files
-SRCS= ${wildcard ../src/*.c} ${wildcard ../src/**/*.c} ${wildcard ccheckmate/*.c} ${wildcard *.c}
+SRCS= ${wildcard ../src/*.c} ${wildcard ../src/**/*.c} ${wildcard ccheckmate/*.c} ${wildcard src/alltests.c}
 
 # Define C header files
-HDRS= ${wildcard ../src/*.h} ${wildcard ../src/**/*.h} ${wildcard ccheckmate/*.h} ${wildcard *.c}
+HDRS= ${wildcard ../src/*.h} ${wildcard ../src/**/*.h} ${wildcard ccheckmate/*.h}
 
 # --- TARGETS
 all: ${MAIN}
