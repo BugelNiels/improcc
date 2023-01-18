@@ -1,9 +1,9 @@
 #include "ccheckmate.h"
-#include "test_intimage.c"
+#include "intimage/test_morphology.c"
 
-BEGIN_CCHECK_MATE
-    #ifdef FAST
-    fprintf(stderr, "\nRunning tests in release mode.\n");
-    #endif
-    testIntImage();
-END_CCHECK_MATE
+ccm_begin_test_suite;
+#ifdef FAST
+fprintf(stderr, "\nRunning tests in release mode.\n");
+#endif
+morphology();
+ccm_end_test_suite;

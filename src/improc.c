@@ -2612,7 +2612,16 @@ static void slidingWindowOrd(int *img, int *out, int n, int w, int ord, int offs
   // our quack datastructure stores indices of numers in our original array
   Quack quack = createNewQuackWithMemory(w, workspace);
 
-  for (int i = 0; i < n; i++) {
+  // Since we consider the origin of the kernel to be the center pixel, we
+  // calculate the distance from the origin to the edge of the kernel here. This
+  // is then used primarily for boundary checks.
+  int half = w / 2;
+
+  // In this algorithm we consider a window of width w, where we always write after having read the right-most element.
+  // However, since we want the origin of the window to be the center pixel, we delay writing by half the the window
+  // width (and when we write, we write to position i - width). Consequently, we need to keep iterating until the last
+  // elment written will be element n-1, which is why we iterate until n + half.
+  for (int i = 0; i < n + half; i++) {
     // remove any elements from the front (oldest side) of the quack that are now out of the "reach" of our window
     while (!quackIsEmpty(&quack) && quackPeekFront(&quack) <= i - w) {
       quackPopFront(&quack);
@@ -2622,13 +2631,26 @@ static void slidingWindowOrd(int *img, int *out, int n, int w, int ord, int offs
     // until we encounter a value that is larger (and makes the current value insignificant). our loop invariant is
     // that we keep the largest value currently in our window at the front of the quack.
     // NOTE: the comparison to ord is a complicated way of switching between < and >
-    while (!quackIsEmpty(&quack) && (img[quackPeekBack(&quack) * offset + start] <= img[i * offset + start]) == ord) {
+    // NOTE: the i < n boundary check is here to avoid reading pixels out of bounds on the right side of the list
+    while (!quackIsEmpty(&quack) && (i < n) && (img[quackPeekBack(&quack) * offset + start] <= img[i * offset + start]) == ord) {
       quackPopBack(&quack);
     }
 
-    quackPushBack(&quack, i);
+    // When the algorithm reaches i = n we are essentially done. All that is left is "drain" the quack to fill the last
+    // few elements we still need to write (due to our writing delay).
+    if (i < n) {
+      quackPushBack(&quack, i);
+    }
 
-    out[i * offset + start] = img[quackPeekFront(&quack) * offset + start];
+    if (i >= half) {
+      // We delay writing to the output by 2 pixels, which centers the origin of our kernel. Therefore we only start
+      // writing when i >= half.
+      if (ord == 0 && (i < w || i > n - half)) {
+        out[(i - half) * offset + start] = 0;
+      } else {
+        out[(i - half) * offset + start] = img[quackPeekFront(&quack) * offset + start];
+      }
+    }
   }
 }
 
@@ -2646,6 +2668,10 @@ IntImage dilateErodeIntImageRect(IntImage image, int kw, int kh, int flag) {
   IntImage result = allocateIntImageGridDomain(domain, image.minRange, image.maxRange);
   int width, height;
   getWidthHeight(domain, &width, &height);
+
+  if (kw % 2 != 1 || kh % 2 != 1) {
+    fatalError("dilation or erosion can only be done if window dimensions are odd (w = %dx%d)\n", kw, kh);
+  }
 
   // we allocate memory here to avoid having to repeat allocations for every row/col
   int largestDim = maxOp(kw, kh);
